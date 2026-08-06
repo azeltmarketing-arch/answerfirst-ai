@@ -378,6 +378,14 @@ def _migrate_sms_prefs():
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    # Ensure tables exist
+    try:
+        c = conn.cursor()
+        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='clients'")
+        if not c.fetchone():
+            create_tables()
+    except Exception:
+        create_tables()
     return conn
 
 

@@ -18,3 +18,5 @@ services:
         value: smtp.gmail.com
       - key: GMAIL_SMTP_PORT
         value: "587"
+      - key: PORTAL_DB_PATH
+        value: /tmp/portal.db
