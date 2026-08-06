@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnswerFirst AI — 15+ Appointments Per Month Guaranteed</title>
+    <meta name="description" content="AI-powered appointment setting for HVAC and roofing contractors. 24/7 call answering, SMS follow-up, and lead nurturing. 10-appointment guarantee or your money back.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #1a1a2e; background: #ffffff; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header { background: #0f172a; padding: 20px 0; position: sticky; top: 0; z-index: 100; }
+        nav { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }
+        .logo span { color: #38bdf8; }
+        .nav-links { display: flex; gap: 30px; list-style: none; }
+        .nav-links a { color: #cbd5e1; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #38bdf8; }
+        .cta-button { background: #38bdf8; color: #0f172a; padding: 12px 28px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+        .cta-button:hover { background: #0ea5e9; transform: translateY(-2px); box-shadow: 0 10px 25px rgba(56,189,248,0.3); }
+        
+        /* Hero */
+        .hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 100px 0 80px; text-align: center; }
+        .hero h1 { font-size: 3.2rem; font-weight: 900; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px; }
+        .hero h1 span { color: #38bdf8; }
+        .hero p { font-size: 1.25rem; color: #cbd5e1; max-width: 700px; margin: 0 auto 40px; }
+        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-secondary { background: transparent; color: white; padding: 12px 28px; border-radius: 8px; font-weight: 600; text-decoration: none; border: 2px solid rgba(255,255,255,0.3); }
+        .btn-secondary:hover { border-color: #38bdf8; color: #38bdf8; }
+        
+        /* Stats */
+        .stats { background: #f8fafc; padding: 60px 0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; text-align: center; }
+        .stat h3 { font-size: 2.5rem; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
+        .stat p { color: #64748b; font-size: 1rem; }
+        
+        /* Problem/Solution */
+        .problem-solution { padding: 80px 0; }
+        .section-title { font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 16px; color: #0f172a; }
+        .section-subtitle { text-align: center; color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 0 auto 50px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 30px; transition: all 0.3s; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 16px; }
+        .card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: #0f172a; }
+        .card p { color: #475569; line-height: 1.7; }
+        
+        /* How It Works */
+        .how-it-works { background: #f8fafc; padding: 80px 0; }
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; margin-top: 50px; }
+        .step { text-align: center; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: #0f172a; color: #38bdf8; border-radius: 50%; font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; }
+        .step h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #0f172a; }
+        .step p { color: #475569; font-size: 0.95rem; }
+        
+        /* Pricing */
+        .pricing { padding: 80px 0; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 50px; }
+        .pricing-card { background: white; border: 2px solid #e2e8f0; border-radius: 16px; padding: 40px 30px; text-align: center; transition: all 0.3s; }
+        .pricing-card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px rgba(0,0,0,0.1); }
+        .pricing-card.featured { border-color: #38bdf8; position: relative; }
+        .badge { position: absolute; top: -12px; right: 30px; background: #38bdf8; color: #0f172a; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+        .pricing-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; color: #0f172a; }
+        .price { font-size: 3rem; font-weight: 900; color: #0f172a; margin: 20px 0; }
+        .price span { font-size: 1rem; color: #64748b; font-weight: 500; }
+        .pricing-card ul { list-style: none; margin: 30px 0; text-align: left; }
+        .pricing-card ul li { padding: 10px 0; color: #475569; border-bottom: 1px solid #f1f5f9; }
+        .pricing-card ul li:last-child { border-bottom: none; }
+        .pricing-card ul li:before { content: "✓ "; color: #10b981; font-weight: 700; }
+        
+        /* Guarantee */
+        .guarantee { background: #0f172a; color: white; padding: 80px 0; text-align: center; }
+        .guarantee h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; }
+        .guarantee p { font-size: 1.2rem; color: #cbd5e1; max-width: 600px; margin: 0 auto; }
+        
+        /* CTA */
+        .cta-section { padding: 80px 0; text-align: center; }
+        .cta-section h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; color: #0f172a; }
+        .cta-section p { font-size: 1.1rem; color: #475569; max-width: 600px; margin: 0 auto 30px; }
+        
+        /* Footer */
+        footer { background: #0f172a; color: #cbd5e1; padding: 40px 0; text-align: center; }
+        footer a { color: #38bdf8; text-decoration: none; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Answer<span>First</span> AI</div>
+                <ul class="nav-links">
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#guarantee">Guarantee</a></li>
+                </ul>
+                <a href="#contact" class="cta-button">Get Started</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Never Miss Another <span>Appointment</span></h1>
+            <p>AI-powered call answering and lead recovery for HVAC and roofing contractors. We guarantee 15+ booked appointments per month.</p>
+            <div class="hero-buttons">
+                <a href="#contact" class="cta-button">Book a Demo</a>
+                <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat">
+                    <h3>24/7</h3>
+                    <p>Call Coverage</p>
+                </div>
+                <div class="stat">
+                    <h3>&lt;1 Ring</h3>
+                    <p>Answer Time</p>
+                </div>
+                <div class="stat">
+                    <h3>15+</h3>
+                    <p>Appointments Guaranteed</p>
+                </div>
+                <div class="stat">
+                    <h3>0</h3>
+                    <p>Missed Calls</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="problem-solution">
+        <div class="container">
+            <h2 class="section-title">The Problem Every Contractor Faces</h2>
+            <p class="section-subtitle">While you're on a job, your phone is ringing. And most of the time, it goes to voicemail.</p>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-icon">📞</div>
+                    <h3>Missed Calls = Lost Revenue</h3>
+                    <p>The average contractor misses 20-30% of incoming calls. Each missed call is a potential $3,000-$8,000 job walking to your competitor.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⏰</div>
+                    <h3>Voicemail Doesn't Cut It</h3>
+                    <p>85% of customers with an urgent need won't leave a voicemail. They'll call the next company on Google—and you'll never hear from them again.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💰</div>
+                    <h3>Marketing Without Backend</h3>
+                    <p>You're spending money on ads and marketing, but 30-40% of new leads are lost because you can't answer the phone fast enough.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🤖</div>
+                    <h3>AI Solves This</h3>
+                    <p>Our AI answers every call within 1 ring, qualifies the lead, and books the appointment directly onto your calendar—24/7, no staff required.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">From missed calls to booked appointments in 4 simple steps.</p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>We Set Up Your AI Receptionist</h3>
+                    <p>Customized for your business, services, and schedule. Takes 7 days or less.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Calls Get Answered Instantly</h3>
+                    <p>AI answers within 1 ring with your business name. Sounds natural, professional.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Leads Get Qualified & Booked</h3>
+                    <p>AI asks the right questions, checks your calendar, and books the appointment.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>You Get More Jobs</h3>
+                    <p>Every call becomes a booked appointment. You focus on the work. We handle the phone.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Simple, Flat Pricing</h2>
+            <p class="section-subtitle">No hidden fees. No long-term contracts. Cancel anytime.</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Basic</h3>
+                    <div class="price">$1,500<span>/month</span></div>
+                    <ul>
+                        <li>AI call answering</li>
+                        <li>SMS follow-up</li>
+                        <li>Calendar integration</li>
+                        <li>Basic analytics</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="#contact" class="cta-button" style="width:100%; text-align:center; display:block;">Get Started</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="badge">MOST POPULAR</div>
+                    <h3>Premium</h3>
+                    <div class="price">$2,500<span>/month</span></div>
+                    <ul>
+                        <li>Everything in Basic</li>
+                        <li>24/7 coverage</li>
+                        <li>Google Maps optimization</li>
+                        <li>Bi-weekly strategy call</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="#contact" class="cta-button" style="width:100%; text-align:center; display:block;">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">$4,000<span>/month</span></div>
+                    <ul>
+                        <li>Everything in Premium</li>
+                        <li>Multi-location support</li>
+                        <li>Full local SEO</li>
+                        <li>Paid ads management</li>
+                        <li>Dedicated account manager</li>
+                    </ul>
+                    <a href="#contact" class="cta-button" style="width:100%; text-align:center; display:block;">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="guarantee" id="guarantee">
+        <div class="container">
+            <h2>Our 30-Day Performance Guarantee</h2>
+            <p>If we don't book at least 10 qualified appointments in your first 30 days, you get a full refund. No hoops. No fine print. No "account manager will call you" guilt trips.</p>
+        </div>
+    </section>
+
+    <section class="cta-section" id="contact">
+        <div class="container">
+            <h2>Ready to Fill Your Calendar?</h2>
+            <p>Book a free 15-minute demo to see exactly how we can recover your missed calls and fill your schedule.</p>
+            <a href="mailto:azelt.marketing@gmail.com?subject=AnswerFirst AI Demo Request" class="cta-button">Book Your Free Demo</a>
+            <p style="margin-top: 20px; font-size: 0.95rem; color: #64748b;">Or email us directly at azelt.marketing@gmail.com</p>
+        </div>
+    </section>
+
+    <section class="pricing" id="payment">
+        <div class="container">
+            <h2 class="section-title">Pay &amp; Get Started</h2>
+            <p class="section-subtitle">Choose your plan and start filling your calendar today.</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Basic</h3>
+                    <div class="price">$1,500<span>/month</span></div>
+                    <ul>
+                        <li>AI call answering</li>
+                        <li>SMS follow-up</li>
+                        <li>Calendar integration</li>
+                        <li>Basic analytics</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="https://divide-seafood-norman-campbell.trycloudflare.com/portal/order?package=Basic" class="cta-button" style="width:100%; text-align:center; display:block;">Buy Basic</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="badge">MOST POPULAR</div>
+                    <h3>Premium</h3>
+                    <div class="price">$2,500<span>/month</span></div>
+                    <ul>
+                        <li>Everything in Basic</li>
+                        <li>24/7 coverage</li>
+                        <li>Google Maps optimization</li>
+                        <li>Bi-weekly strategy call</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <a href="https://divide-seafood-norman-campbell.trycloudflare.com/portal/order?package=Premium" class="cta-button" style="width:100%; text-align:center; display:block;">Buy Premium</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">$4,000<span>/month</span></div>
+                    <ul>
+                        <li>Everything in Premium</li>
+                        <li>Multi-location support</li>
+                        <li>Full local SEO</li>
+                        <li>Paid ads management</li>
+                        <li>Dedicated account manager</li>
+                    </ul>
+                    <a href="https://divide-seafood-norman-campbell.trycloudflare.com/portal/order?package=Enterprise" class="cta-button" style="width:100%; text-align:center; display:block;">Buy Enterprise</a>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: #64748b;">Payment email: azelt5697@gmail.com</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p> AnswerFirst AI. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="mailto:azelt.marketing@gmail.com">Contact</a> · <a href="#pricing">Pricing</a> · <a href="#guarantee">Guarantee</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

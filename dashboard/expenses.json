@@ -1,0 +1,14 @@
+[
+  {"category": "CRM", "type": "fixed", "amount": 20},
+  {"category": "Email Tools", "type": "fixed", "amount": 30},
+  {"category": "Automation", "type": "fixed", "amount": 9},
+  {"category": "AI/API", "type": "fixed", "amount": 50},
+  {"category": "Calendar", "type": "fixed", "amount": 12},
+  {"category": "Website", "type": "fixed", "amount": 14},
+  {"category": "SMS", "type": "fixed", "amount": 5},
+  {"category": "Documents", "type": "fixed", "amount": 29},
+  {"category": "LinkedIn", "type": "fixed", "amount": 99},
+  {"category": "AI Voice", "type": "variable", "amount": 49},
+  {"category": "SMS Usage", "type": "variable", "amount": 5},
+  {"category": "API Calls", "type": "variable", "amount": 10}
+]

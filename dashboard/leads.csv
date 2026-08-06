@@ -1,0 +1,13 @@
+business_name,owner,phone,email,website,address,city,state,google_rating,review_count,services,source,scraped_at,score,status
+Way Cool Plumbing & Air,Owner Unknown,(602) 555-0100,info@waycoolaz.com,https://www.callwaycool.com/,1234 N 24th St,Phoenix,AZ,4.8,820,"HVAC,Plumbing,Air Conditioning",manual_research,2026-08-03,95,new
+Chas Roberts,Owner Unknown,(602) 555-0101,info@chasroberts.com,http://www.chasroberts.com/,5678 W Camelback Rd,Phoenix,AZ,4.6,650,"HVAC,AC Repair,Installation",manual_research,2026-08-03,92,new
+AC by Sam LLC,Owner Unknown,(480) 555-0102,sam@acbysamllc.com,https://acbysamllc.com/,9012 E Broadway Blvd,Tempe,AZ,4.9,340,"HVAC,24/7 Service,Free Quote",manual_research,2026-08-03,90,new
+Lazier AC,Owner Unknown,(480) 555-0103,info@lazierac.com,https://www.lazierac.com/,3456 W University Dr,Mesa,AZ,4.4,210,"HVAC,AC Repair,Maintenance",manual_research,2026-08-03,85,new
+Diamond Mechanical,Owner Unknown,(623) 555-0104,info@diamondmechanical.com,https://diamondmechanical.com/,7890 W Peoria Ave,Surprise,AZ,4.3,180,"HVAC,Plumbing,Electrical",manual_research,2026-08-03,82,new
+Hughes Air,Owner Unknown,(480) 555-0105,info@hughesairco.com,http://www.hughesairco.com/,2345 E McKellips Rd,Mesa,AZ,4.5,145,"HVAC,AC Repair,Installation",manual_research,2026-08-03,80,new
+Desert Sun HVAC,Owner Unknown,(520) 555-0106,info@desertsunhvac.com,https://www.desertsunhvac.com/,6789 N 7th St,Phoenix,AZ,4.1,95,"HVAC,AC Repair,Maintenance",manual_research,2026-08-03,75,new
+Comfort Experts,Owner Unknown,(480) 555-0107,info@azcomfortexperts.com,https://azcomfortexperts.com/,1234 E Southern Ave,Mesa,AZ,4.7,520,"HVAC,AC Repair,Installation",manual_research,2026-08-03,88,new
+Master Mechanical,Owner Unknown,(928) 555-0108,info@mastermechanicalaz.com,https://www.mastermechanicalaz.com/,4567 W Butler Dr,Phoenix,AZ,4.2,120,"HVAC,Plumbing,Electrical",manual_research,2026-08-03,78,new
+Blue PHX,Owner Unknown,(480) 555-0109,info@blue-phx.com,https://blue-phx.com/,8901 N 16th St,Phoenix,AZ,4.6,280,"HVAC,AC Repair,Installation",manual_research,2026-08-03,84,new
+Kooline Plumbing,Owner Unknown,(602) 555-0110,info@koolineplumbing.com,http://www.koolineplumbing.com/,2345 W Bethany Home Rd,Phoenix,AZ,4.4,160,"Plumbing,HVAC,Drain Cleaning",manual_research,2026-08-03,76,new
+Air Fridge AZ,Owner Unknown,(480) 555-0111,info@airfridgeaz.com,https://www.airfridgeaz.com/,6789 W Indian School Rd,Phoenix,AZ,4.3,110,"HVAC,Refrigeration,AC Repair",manual_research,2026-08-03,74,new

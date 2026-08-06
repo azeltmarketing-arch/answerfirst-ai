@@ -1,0 +1,38 @@
+{
+  "hubspot": {
+    "api_key": "",
+    "portal_id": "",
+    "pipeline_id": "default",
+    "stages": {
+      "qualified": "qualifiedtobuy",
+      "demo_scheduled": "appointmentscheduled",
+      "demo_completed": "presentationscheduled",
+      "proposal_sent": "decisionmakerboughtin",
+      "negotiation": "contractsent",
+      "closed_won": "closedwon",
+      "closed_lost": "closedlost"
+    }
+  },
+  "gmass": {
+    "api_key": "",
+    "gmail_address": "azelt.marketing@gmail.com",
+    "app_password": "igrwszbcytqrxycx",
+    "default_follow_up_days": [3, 7],
+    "default_send_hour": 9,
+    "default_send_minute": 0
+  },
+  "answerfirst": {
+    "company_name": "AnswerFirst AI",
+    "owner_name": "Andrew Zelt",
+    "phone": "5622593384",
+    "email": "azelt.marketing@gmail.com",
+    "website": "https://answerfirst.ai",
+    "target_industries": ["HVAC", "Roofing"],
+    "target_cities": ["Phoenix, AZ"],
+    "packages": {
+      "basic": 1500,
+      "premium": 2500,
+      "enterprise": 4000
+    }
+  }
+}

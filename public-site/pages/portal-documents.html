@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnswerFirst AI — Documents</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--bg-alt:#f8fafc;--bg-card:#ffffff;--text:#0f172a;--text-muted:#475569;--border:#e2e8f0;--primary:#0f172a;--accent:#3b82f6;--accent-glow:rgba(59,130,246,0.25);--success:#10b981;--success-glow:rgba(16,185,129,0.25);--shadow:0 4px 20px rgba(0,0,0,0.06);--radius:16px;--transition:0.3s cubic-bezier(0.4,0,0.2,1);}
+[data-theme="dark"]{--bg:#0a0a0a;--bg-alt:#0f0f0f;--bg-card:#171717;--text:#ffffff;--text-muted:#a3a3a3;--border:#262626;--primary:#ffffff;--shadow:0 4px 20px rgba(0,0,0,0.4);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition);}
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);background:rgba(255,255,255,0.7);border-bottom:1px solid var(--border);transition:all var(--transition);}
+[data-theme="dark"] .nav{background:rgba(10,10,10,0.75);}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;color:var(--text);text-decoration:none;}
+.nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--success));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.9rem;}
+.nav-links{display:flex;gap:24px;align-items:center;}
+.nav-link{color:var(--text-muted);text-decoration:none;font-weight:500;font-size:0.9rem;transition:color var(--transition);}
+.nav-link:hover{color:var(--text);}
+.nav-link.active{color:var(--accent);}
+.theme-toggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all var(--transition);}
+.main{padding:100px 5% 40px;max-width:1300px;margin:0 auto;}
+.page-header{margin-bottom:32px;}
+.page-title{font-size:1.75rem;font-weight:800;margin-bottom:4px;}
+.page-subtitle{color:var(--text-muted);font-size:0.95rem;}
+.table-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:14px 16px;font-size:0.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;background:var(--bg-alt);border-bottom:1px solid var(--border);}
+td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:0.95rem;}
+tr:last-child td{border-bottom:none;}
+.empty-state{text-align:center;padding:48px;color:var(--text-muted);}
+.btn{padding:10px 22px;border-radius:100px;font-weight:600;font-size:0.95rem;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;box-shadow:0 4px 14px var(--accent-glow);transition:all var(--transition);}
+.btn:hover{transform:translateY(-2px);}
+a{color:var(--accent);text-decoration:none;font-weight:600;}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.55);display:none;align-items:center;justify-content:center;z-index:2000;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:520px;max-height:90vh;overflow:auto;}
+.modal-title{font-size:1.15rem;font-weight:700;margin-bottom:16px;}
+.form-group{margin-bottom:16px;}
+label{display:block;font-weight:600;margin-bottom:8px;font-size:0.9rem;}
+input,select,textarea{width:100%;padding:12px 16px;background:var(--bg-alt);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:1rem;transition:border-color var(--transition);}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+textarea{min-height:90px;resize:vertical;}
+.msg{margin-top:12px;font-size:0.9rem;}
+.msg.success{color:var(--success);}
+.msg.error{color:#ef4444;}
+@media(max-width:768px){.nav-links{display:none;}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-icon">A</div><span>AnswerFirst AI</span></a>
+  <div class="nav-links">
+    <a href="/portal/dashboard" class="nav-link">Dashboard</a>
+    <a href="/portal/appointments" class="nav-link">Appointments</a>
+    <a href="/portal/leads" class="nav-link">Leads</a>
+    <a href="/portal/billing" class="nav-link">Billing</a>
+    <a href="/portal/support" class="nav-link">Support</a>
+    <a href="/portal/calls" class="nav-link">Calls</a>
+    <a href="/portal/onboarding" class="nav-link">Onboarding</a>
+    <a href="/portal/documents" class="nav-link active">Documents</a>
+    <a href="/portal/account" class="nav-link">Account</a>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+    <form method="POST" action="/portal/logout" style="display:inline;"><button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;font-family:inherit;">Logout</button></form>
+  </div>
+</nav>
+<div class="main">
+  <div class="page-header">
+    <h1 class="page-title">Documents</h1>
+    <p class="page-subtitle">Your shared files and important documents.</p>
+  </div>
+  <div style="margin-bottom:16px;">
+    <button class="btn" id="open-add-doc">Upload / Add Document</button>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Size</th>
+          <th>Uploaded</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="documents-body">
+        <tr><td colspan="6" class="empty-state">Loading documents...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="add-doc-modal">
+  <div class="modal">
+    <div class="modal-title">Add Document</div>
+    <form id="add-doc-form">
+      <div class="form-group"><label>Filename</label><input type="text" id="doc-filename" required></div>
+      <div class="form-group"><label>File Type</label><input type="text" id="doc-file-type" placeholder="PDF, PNG, DOCX..."></div>
+      <div class="form-group"><label>File Size (bytes)</label><input type="number" id="doc-file-size" value="0" min="0"></div>
+      <div class="form-group"><label>File URL</label><input type="text" id="doc-file-url" placeholder="Local path or external URL"></div>
+      <div class="form-group"><label>Description</label><textarea id="doc-description" placeholder="Short description..."></textarea></div>
+      <button type="submit">Save Document</button>
+      <div class="msg" id="doc-msg"></div>
+    </form>
+  </div>
+</div>
+<script>
+const html=document.documentElement;const toggle=document.getElementById('themeToggle');
+const saved=localStorage.getItem('theme');if(saved)html.setAttribute('data-theme',saved);
+else if(window.matchMedia('(prefers-color-scheme:dark)').matches)html.setAttribute('data-theme','dark');
+toggle.textContent=html.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',next);localStorage.setItem('theme',next);toggle.textContent=next==='dark'?'☀️':'🌙';});
+
+const modal=document.getElementById('add-doc-modal');const openBtn=document.getElementById('open-add-doc');
+openBtn.addEventListener('click',()=>modal.classList.add('open'));
+modal.addEventListener('click',(e)=>{if(e.target===modal)modal.classList.remove('open');});
+
+function formatSize(bytes){
+  if(!bytes && bytes!==0) return '-';
+  if(bytes<1024) return bytes+' B';
+  if(bytes<1024*1024) return (bytes/1024).toFixed(1)+' KB';
+  return (bytes/1024/1024).toFixed(1)+' MB';
+}
+
+async function loadDocs(){
+  const tb=document.getElementById('documents-body');
+  try{
+    const token=document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
+    if(!token){ tb.innerHTML='<tr><td colspan="6" class="empty-state">Please log in.</td></tr>'; return; }
+    const r=await fetch('/portal/api/documents',{headers:{'X-Portal-Token':token}});
+    const docs=await r.json();
+    if(!Array.isArray(docs)||!docs.length){ tb.innerHTML='<tr><td colspan="6" class="empty-state">No documents yet.</td></tr>'; return; }
+    tb.innerHTML=docs.map(d=>`<tr>
+      <td>${d.filename||'Untitled'}</td>
+      <td>${d.file_type||'—'}</td>
+      <td>${formatSize(d.file_size)}</td>
+      <td>${d.uploaded_at?new Date(d.uploaded_at).toLocaleString():'—'}</td>
+      <td>${(d.description||'').substring(0,120)||'—'}</td>
+      <td><div style="display:flex;gap:8px;align-items:center;"><a href="${d.file_url||'#'}" target="_blank" rel="noopener">${d.file_url?'View':'—'}</a><button data-id="${d.id}" class="del-doc" style="background:none;border:none;color:#ef4444;cursor:pointer;font-weight:700;">Delete</button></div></td>
+    </tr>`).join('');
+  }catch{
+    tb.innerHTML='<tr><td colspan="6" class="empty-state">Unable to load documents.</td></tr>';
+  }
+}
+
+document.getElementById('add-doc-form').addEventListener('submit',async(e)=>{
+  e.preventDefault();const msg=document.getElementById('doc-msg');
+  try{
+    const token=document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
+    const body={filename:document.getElementById('doc-filename').value,file_type:document.getElementById('doc-file-type').value,file_size:document.getElementById('doc-file-size').value,file_url:document.getElementById('doc-file-url').value,description:document.getElementById('doc-description').value};
+    const r=await fetch('/portal/api/documents',{method:'POST',headers:{'Content-Type':'application/json','X-Portal-Token':token||''},body:JSON.stringify(body)});
+    const j=await r.json();
+    msg.className='msg '+(r.ok?'success':'error');msg.textContent=r.ok?'Document saved.':(j.error||'Error');
+    if(r.ok){document.getElementById('add-doc-form').reset();modal.classList.remove('open');loadDocs();}
+  }catch{msg.className='msg error';msg.textContent='Connection error.';}
+});
+
+document.getElementById('documents-body').addEventListener('click',async(e)=>{
+  if(!e.target.classList.contains('del-doc')) return;
+  const id=e.target.dataset.id; if(!id) return;
+    if(!confirm('Delete this document?')) return;
+  try{
+    const token=document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
+    const r=await fetch('/portal/api/documents/'+id,{method:'DELETE',headers:{'X-Portal-Token':token||''}});
+    const j=await r.json();
+    if(r.ok) loadDocs(); else alert(j.error||'Unable to delete');
+  }catch{alert('Connection error.');}
+});
+
+loadDocs();
+</script>
+</body>
+</html>

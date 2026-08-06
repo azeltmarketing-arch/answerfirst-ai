@@ -1,0 +1,52 @@
+[
+  {
+    "lead_id": "Way Cool Plumbing & Air",
+    "activity_type": "email",
+    "direction": "outbound",
+    "subject": "Quick question about Way Cool Plumbing & Air",
+    "body": "",
+    "sent_at": "2026-08-03T13:36:01.798842",
+    "outcome": "sent",
+    "created_at": "2026-08-03T13:36:01.798842"
+  },
+  {
+    "lead_id": "Chas Roberts",
+    "activity_type": "email",
+    "direction": "outbound",
+    "subject": "Quick question about Chas Roberts",
+    "body": "",
+    "sent_at": "2026-08-03T13:36:04.585406",
+    "outcome": "sent",
+    "created_at": "2026-08-03T13:36:04.585406"
+  },
+  {
+    "lead_id": "AC by Sam LLC",
+    "activity_type": "email",
+    "direction": "outbound",
+    "subject": "Quick question about AC by Sam LLC",
+    "body": "",
+    "sent_at": "2026-08-03T13:36:07.046532",
+    "outcome": "bounced",
+    "created_at": "2026-08-03T13:36:07.046532"
+  },
+  {
+    "lead_id": "Lazier AC",
+    "activity_type": "email",
+    "direction": "outbound",
+    "subject": "Quick question about Lazier AC",
+    "body": "",
+    "sent_at": "2026-08-03T13:36:09.509005",
+    "outcome": "sent",
+    "created_at": "2026-08-03T13:36:09.509005"
+  },
+  {
+    "lead_id": "Diamond Mechanical",
+    "activity_type": "email",
+    "direction": "outbound",
+    "subject": "Quick question about Diamond Mechanical",
+    "body": "",
+    "sent_at": "2026-08-03T13:36:10.950081",
+    "outcome": "sent",
+    "created_at": "2026-08-03T13:36:10.950081"
+  }
+]

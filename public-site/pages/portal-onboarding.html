@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnswerFirst AI — Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--bg-alt:#f8fafc;--bg-card:#ffffff;--text:#0f172a;--text-muted:#475569;--border:#e2e8f0;--primary:#0f172a;--accent:#3b82f6;--accent-glow:rgba(59,130,246,0.25);--success:#10b981;--success-glow:rgba(16,185,129,0.25);--shadow:0 4px 20px rgba(0,0,0,0.06);--radius:16px;--transition:0.3s cubic-bezier(0.4,0,0.2,1);}
+[data-theme="dark"]{--bg:#0a0a0a;--bg-alt:#0f0f0f;--bg-card:#171717;--text:#ffffff;--text-muted:#a3a3a3;--border:#262626;--primary:#ffffff;--shadow:0 4px 20px rgba(0,0,0,0.4);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition);}
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);background:rgba(255,255,255,0.7);border-bottom:1px solid var(--border);transition:all var(--transition);}
+[data-theme="dark"] .nav{background:rgba(10,10,10,0.75);}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;color:var(--text);text-decoration:none;}
+.nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--success));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.9rem;}
+.nav-links{display:flex;gap:24px;align-items:center;}
+.nav-link{color:var(--text-muted);text-decoration:none;font-weight:500;font-size:0.9rem;transition:color var(--transition);}
+.nav-link:hover{color:var(--text);}
+.nav-link.active{color:var(--accent);}
+.theme-toggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all var(--transition);}
+.main{padding:100px 5% 40px;max-width:900px;margin:0 auto;}
+.page-header{margin-bottom:32px;}
+.page-title{font-size:1.75rem;font-weight:800;margin-bottom:4px;}
+.page-subtitle{color:var(--text-muted);font-size:0.95rem;}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:20px;}
+.progress-bar{width:100%;height:8px;background:var(--border);border-radius:100px;overflow:hidden;margin:16px 0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));border-radius:100px;width:0%;transition:width 0.5s ease;}
+.checklist{list-style:none;}
+.checklist li{padding:14px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.checklist li:last-child{border-bottom:none;}
+.checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;}
+.checkbox.done{background:var(--success);border-color:var(--success);color:#fff;}
+.step-title{font-weight:700;font-size:1rem;}
+.step-desc{font-size:0.9rem;color:var(--text-muted);}
+.resource-link{display:block;padding:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;color:var(--text);text-decoration:none;font-weight:500;transition:all var(--transition);}
+.resource-link:hover{border-color:var(--accent);color:var(--accent);}
+.empty-state{text-align:center;padding:48px;color:var(--text-muted);}
+@media(max-width:768px){.nav-links{display:none;}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-icon">A</div><span>AnswerFirst AI</span></a>
+  <div class="nav-links">
+    <a href="/portal/dashboard" class="nav-link">Dashboard</a>
+    <a href="/portal/appointments" class="nav-link">Appointments</a>
+    <a href="/portal/leads" class="nav-link">Leads</a>
+    <a href="/portal/billing" class="nav-link">Billing</a>
+    <a href="/portal/support" class="nav-link">Support</a>
+    <a href="/portal/calls" class="nav-link">Calls</a>
+    <a href="/portal/onboarding" class="nav-link active">Onboarding</a>
+    <a href="/portal/documents" class="nav-link">Documents</a>
+    <a href="/portal/account" class="nav-link">Account</a>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+    <form method="POST" action="/portal/logout" style="display:inline;"><button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;font-family:inherit;">Logout</button></form>
+  </div>
+</nav>
+<div class="main">
+  <div class="page-header">
+    <h1 class="page-title">Onboarding</h1>
+    <p class="page-subtitle">Let's get your AI agent up and running.</p>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="font-weight:700;">Setup Progress</div>
+      <div style="font-weight:700;color:var(--accent);" id="progress-text">Loading...</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
+  </div>
+  <div class="card">
+    <ul class="checklist" id="onboarding-list">
+      <li><td colspan="3" class="empty-state">Loading onboarding steps...</td></li>
+    </ul>
+  </div>
+  <div class="card">
+    <div style="font-weight:700;margin-bottom:12px;">Resources</div>
+    <a href="#" class="resource-link">📄 Setup Checklist PDF</a>
+    <a href="#" class="resource-link">🎥 Video: How to forward calls</a>
+    <a href="#" class="resource-link">💬 Schedule your kickoff call</a>
+  </div>
+</div>
+<script>
+const html=document.documentElement;const toggle=document.getElementById('themeToggle');
+const saved=localStorage.getItem('theme');if(saved)html.setAttribute('data-theme',saved);
+else if(window.matchMedia('(prefers-color-scheme:dark)').matches)html.setAttribute('data-theme','dark');
+toggle.textContent=html.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',next);localStorage.setItem('theme',next);toggle.textContent=next==='dark'?'☀️':'🌙';});
+(async()=>{
+  const token = document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
+  if(!token) return;
+  const headers = {'X-Portal-Token': token};
+  try {
+    const r = await fetch('/portal/api/onboarding', {headers});
+    const steps = await r.json();
+    const list = document.getElementById('onboarding-list');
+    if(!steps.length){
+      list.innerHTML = '<li><div class=\"empty-state\">No onboarding steps yet.</div></li>';
+      document.getElementById('progress-text').textContent = '0 of 0 complete';
+      document.getElementById('progress-fill').style.width = '0%';
+      return;
+    }
+    const total = steps.length;
+    const completed = steps.filter(s=>s.status==='completed').length;
+    document.getElementById('progress-text').textContent = completed + ' of ' + total + ' complete';
+    document.getElementById('progress-fill').style.width = ((completed/total)*100) + '%';
+    list.innerHTML = steps.map(s=>{
+      const done = s.status === 'completed';
+      return `<li>
+        <div class=\"checkbox ${done?'done':''}\">${done?'✓':''}</div>
+        <div style=\"flex:1;\">
+          <div class=\"step-title\">${s.step_title||'Step'}</div>
+          <div class=\"step-desc\">${s.notes||s.description||''}</div>
+        </div>
+        ${done?'<span class=\"badge badge-green\">Completed</span>':`<button class=\"chart-btn\" data-step-id=\"${s.id}\">Mark Complete</button>`}
+      </li>`;
+    }).join('');
+    list.querySelectorAll('button[data-step-id]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const id = btn.dataset.stepId;
+        try {
+          await fetch('/portal/api/onboarding', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-Portal-Token': token},
+            body: JSON.stringify({step_title:'', step_key:'', status:'completed', notes:'Completed by user'})
+          });
+          location.reload();
+        } catch {}
+      });
+    });
+  } catch {
+    document.getElementById('onboarding-list').innerHTML = '<li><div class=\"empty-state\">Unable to load onboarding.</div></li>';
+  }
+})();
+</script>
+</body>
+</html>

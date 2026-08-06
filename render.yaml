@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: answerfirst-api
+    env: python
+    buildCommand: pip install -r unified/requirements.txt
+    startCommand: cd unified && gunicorn app:app --bind 0.0.0.0:$PORT
+    plan: free
+    envVars:
+      - key: PORTAL_SECRET
+        generateValue: true
