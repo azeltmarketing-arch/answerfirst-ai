@@ -288,6 +288,9 @@ def create_tables():
     conn.close()
     _migrate_db()
 
+# Initialize database on import
+create_tables()
+
 
 def _migrate_db():
     conn = sqlite3.connect(DB_PATH)
