@@ -91,7 +91,7 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
   if(!token) return;
   const headers = {'X-Portal-Token': token};
   try {
-    const r = await fetch('https://neat-bugs-start.loca.lt/portal/api/onboarding', {headers});
+    const r = await fetch('/portal/api/onboarding', {headers});
     const steps = await r.json();
     const list = document.getElementById('onboarding-list');
     if(!steps.length){
@@ -119,7 +119,7 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
       btn.addEventListener('click', async ()=>{
         const id = btn.dataset.stepId;
         try {
-          await fetch('https://neat-bugs-start.loca.lt/portal/api/onboarding', {
+          await fetch('/portal/api/onboarding', {
             method: 'POST',
             headers: {'Content-Type':'application/json','X-Portal-Token': token},
             body: JSON.stringify({step_title:'', step_key:'', status:'completed', notes:'Completed by user'})

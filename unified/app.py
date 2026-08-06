@@ -12,7 +12,7 @@ from email.mime.text import MIMEText
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.environ.get("PORTAL_SECRET", secrets.token_hex(32))
-DB_PATH = os.path.join(os.path.dirname(__file__), "portal.db")
+DB_PATH = os.environ.get("PORTAL_DB_PATH", os.path.join(os.path.dirname(__file__), "portal.db"))
 
 # ===================== STATIC PUBLIC SITE =====================
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public-site')
@@ -27,6 +27,10 @@ def unified_static(filename):
     if os.path.isfile(full):
         return send_from_directory(PUBLIC_DIR, filename)
     return send_from_directory(PUBLIC_DIR, 'index.html')
+
+# Vercel serverless optimization
+if os.environ.get('VERCEL'):
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 
 # ===================== SMTP / SMS =====================

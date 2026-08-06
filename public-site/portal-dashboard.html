@@ -148,16 +148,16 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
     if(!token) return;
     const headers = {'X-Portal-Token': token};
     const [actR, revR, upsellR, satR, campR, riskR, agentR, leadR, callR, apptR] = await Promise.all([
-      fetch('https://neat-bugs-start.loca.lt/portal/api/activities', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/revenue-timeline?period=weekly', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/upsell', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/satisfaction', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/campaigns', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/risks', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/agent-performance', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/leads', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/calls', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/appointments', {headers}).catch(()=>null),
+      fetch('/portal/api/activities', {headers}).catch(()=>null),
+      fetch('/portal/api/revenue-timeline?period=weekly', {headers}).catch(()=>null),
+      fetch('/portal/api/upsell', {headers}).catch(()=>null),
+      fetch('/portal/api/satisfaction', {headers}).catch(()=>null),
+      fetch('/portal/api/campaigns', {headers}).catch(()=>null),
+      fetch('/portal/api/risks', {headers}).catch(()=>null),
+      fetch('/portal/api/agent-performance', {headers}).catch(()=>null),
+      fetch('/portal/api/leads', {headers}).catch(()=>null),
+      fetch('/portal/api/calls', {headers}).catch(()=>null),
+      fetch('/portal/api/appointments', {headers}).catch(()=>null),
     ]);
     const leadCount = leadR?.ok ? (await leadR.json()).length : 0;
     const callCount = callR?.ok ? (await callR.json()).length : 0;
@@ -229,7 +229,7 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
       const token = document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
       if(!token) return;
       try{
-        const r = await fetch('https://neat-bugs-start.loca.lt/portal/api/revenue-timeline?period=' + period, {headers:{'X-Portal-Token': token}});
+        const r = await fetch('/portal/api/revenue-timeline?period=' + period, {headers:{'X-Portal-Token': token}});
         const data = await r.json();
         const canvas = document.getElementById('revenue-canvas');
         const emptyEl = document.getElementById('chart-empty');
