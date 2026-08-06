@@ -4,6 +4,18 @@
     { "src": "public-site/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/public-site/" }
+    { "src": "/portal-login.html", "dest": "/pages/portal-login.html" },
+    { "src": "/portal-register.html", "dest": "/pages/portal-register.html" },
+    { "src": "/portal-dashboard.html", "dest": "/pages/portal-dashboard.html" },
+    { "src": "/portal-order.html", "dest": "/pages/portal-order.html" },
+    { "src": "/portal-account.html", "dest": "/pages/portal-account.html" },
+    { "src": "/portal-onboarding.html", "dest": "/pages/portal-onboarding.html" },
+    { "src": "/portal-documents.html", "dest": "/pages/portal-documents.html" },
+    { "src": "/portal-support.html", "dest": "/pages/portal-support.html" },
+    { "src": "/portal-leads.html", "dest": "/pages/portal-leads.html" },
+    { "src": "/portal-calls.html", "dest": "/pages/portal-calls.html" },
+    { "src": "/portal-appointments.html", "dest": "/pages/portal-appointments.html" },
+    { "src": "/portal-billing.html", "dest": "/pages/portal-billing.html" },
+    { "src": "/(.*)", "dest": "/" }
   ]
 }

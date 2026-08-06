@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnswerFirst AI — Order Confirmation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--bg-alt:#f8fafc;--bg-card:#ffffff;--text:#0f172a;--text-muted:#475569;--border:#e2e8f0;--primary:#0f172a;--accent:#3b82f6;--accent-glow:rgba(59,130,246,0.25);--success:#10b981;--success-glow:rgba(16,185,129,0.25);--shadow:0 4px 20px rgba(0,0,0,0.06);--radius:16px;--transition:0.3s cubic-bezier(0.4,0,0.2,1);}
+[data-theme="dark"]{--bg:#0a0a0a;--bg-alt:#0f0f0f;--bg-card:#171717;--text:#ffffff;--text-muted:#a3a3a3;--border:#262626;--primary:#ffffff;--shadow:0 4px 20px rgba(0,0,0,0.4);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background var(--transition),color var(--transition);}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:48px;max-width:620px;width:100%;text-align:center;}
+.icon{width:80px;height:80px;border-radius:50%;background:var(--success-glow);color:var(--success);display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 24px;}
+.title{font-size:2rem;font-weight:800;margin-bottom:12px;}
+.subtitle{color:var(--text-muted);font-size:1rem;line-height:1.7;margin-bottom:28px;}
+.btn{padding:12px 24px;border-radius:100px;font-weight:600;font-size:0.95rem;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;box-shadow:0 4px 14px var(--accent-glow);transition:all var(--transition);text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+.btn:hover{transform:translateY(-2px);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">✅</div>
+  <div class="title">Order Confirmed</div>
+  <p class="subtitle">Your payment was successful and your subscription is now active. We'll reach out within 24 hours to begin onboarding.</p>
+  <a href="/portal/dashboard" class="btn">Go to Dashboard</a>
+</div>
+</body>
+</html>
