@@ -28,9 +28,9 @@ button[type="submit"]:hover{transform:translateY(-2px);box-shadow:0 8px 25px var
 .error-msg{color:#ef4444;font-size:0.9rem;margin-top:8px;display:none;}
 </style>
 </head>
-<a href="/portal/login" class="nav-link">Client Portal</a>
+<a href="/portal-login.html" class="nav-link">Client Portal</a>
 <button class="theme-toggle" id="themeToggle">🌙</button>
-<a href="/portal/login" class="nav-cta">Sign In</a>
+<a href="/portal-login.html" class="nav-cta">Sign In</a>
 <a href="/" class="back-link">← Back to AnswerFirst AI</a>
 <div class="card">
   <div class="logo"><div class="logo-icon">A</div><span>Create Account</span></div>
@@ -48,7 +48,7 @@ button[type="submit"]:hover{transform:translateY(-2px);box-shadow:0 8px 25px var
       Verify your email—check your inbox.
     </div>
   </form>
-  <div class="footer">Already have an account? <a href="/portal/login">Log in</a></div>
+  <div class="footer">Already have an account? <a href="/portal-login.html">Log in</a></div>
 </div>
 <script>
 const html=document.documentElement;const toggle=document.getElementById('themeToggle');
@@ -58,7 +58,7 @@ toggle.textContent=html.getAttribute('data-theme')==='dark'?'☀️':'🌙';
 toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',next);localStorage.setItem('theme',next);toggle.textContent=next==='dark'?'☀️':'🌙';});
 document.getElementById('register-form').addEventListener('submit',async(e)=>{
   e.preventDefault();const err=document.getElementById('register-error');
-  try{const r=await fetch('/portal/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business_name:document.getElementById('reg-business').value,name:document.getElementById('reg-name').value,email:document.getElementById('reg-email').value,phone:document.getElementById('reg-phone').value,password:document.getElementById('reg-password').value})});const j=await r.json();if(r.ok&&j._session_token&&!j.verification_required){window.location.href='/portal/dashboard';}else{err.style.display='block';err.textContent=j.error||'Registration failed';if(j.verification_required){const b=document.getElementById('verify-banner');if(b){b.style.display='block';}}}}catch(ex){err.style.display='block';err.textContent='Connection error';}
+  try{const r=await fetch('/portal/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business_name:document.getElementById('reg-business').value,name:document.getElementById('reg-name').value,email:document.getElementById('reg-email').value,phone:document.getElementById('reg-phone').value,password:document.getElementById('reg-password').value})});const j=await r.json();if(r.ok&&j._session_token&&!j.verification_required){window.location.href='/portal-dashboard.html';}else{err.style.display='block';err.textContent=j.error||'Registration failed';if(j.verification_required){const b=document.getElementById('verify-banner');if(b){b.style.display='block';}}}}catch(ex){err.style.display='block';err.textContent='Connection error';}
 });
 </script>
 </body>
