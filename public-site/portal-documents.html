@@ -127,7 +127,7 @@ async function loadDocs(){
   try{
     const token=document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
     if(!token){ tb.innerHTML='<tr><td colspan="6" class="empty-state">Please log in.</td></tr>'; return; }
-    const r=await fetch('/portal/api/documents',{headers:{'X-Portal-Token':token}});
+    const r=await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/documents',{headers:{'X-Portal-Token':token}});
     const docs=await r.json();
     if(!Array.isArray(docs)||!docs.length){ tb.innerHTML='<tr><td colspan="6" class="empty-state">No documents yet.</td></tr>'; return; }
     tb.innerHTML=docs.map(d=>`<tr>
@@ -148,7 +148,7 @@ document.getElementById('add-doc-form').addEventListener('submit',async(e)=>{
   try{
     const token=document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
     const body={filename:document.getElementById('doc-filename').value,file_type:document.getElementById('doc-file-type').value,file_size:document.getElementById('doc-file-size').value,file_url:document.getElementById('doc-file-url').value,description:document.getElementById('doc-description').value};
-    const r=await fetch('/portal/api/documents',{method:'POST',headers:{'Content-Type':'application/json','X-Portal-Token':token||''},body:JSON.stringify(body)});
+    const r=await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/documents',{method:'POST',headers:{'Content-Type':'application/json','X-Portal-Token':token||''},body:JSON.stringify(body)});
     const j=await r.json();
     msg.className='msg '+(r.ok?'success':'error');msg.textContent=r.ok?'Document saved.':(j.error||'Error');
     if(r.ok){document.getElementById('add-doc-form').reset();modal.classList.remove('open');loadDocs();}
@@ -161,7 +161,7 @@ document.getElementById('documents-body').addEventListener('click',async(e)=>{
     if(!confirm('Delete this document?')) return;
   try{
     const token=document.cookie.split('; ').find(row=>row.startsWith('portal_token='))?.split('=')[1];
-    const r=await fetch('/portal/api/documents/'+id,{method:'DELETE',headers:{'X-Portal-Token':token||''}});
+    const r=await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/documents/'+id,{method:'DELETE',headers:{'X-Portal-Token':token||''}});
     const j=await r.json();
     if(r.ok) loadDocs(); else alert(j.error||'Unable to delete');
   }catch{alert('Connection error.');}

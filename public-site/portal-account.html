@@ -125,7 +125,7 @@ document.getElementById('account-form').addEventListener('submit',async(e)=>{
 e.preventDefault();const msg=document.getElementById('account-msg');
 const btn = e.target.querySelector('button[type="submit"]');
 if(btn){btn.disabled=true;btn.textContent='Saving...';}
-try{const r=await fetch('/portal/api/account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business_name:document.getElementById('acc-business').value,name:document.getElementById('acc-name').value,email:document.getElementById('acc-email').value,phone:document.getElementById('acc-phone').value})});const j=await r.json();msg.className='msg '+(r.ok?'success':'error');msg.textContent=j.status==='saved'?'Settings saved.':(j.error||'Error');}catch{msg.className='msg error';msg.textContent='Connection error.';}
+try{const r=await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business_name:document.getElementById('acc-business').value,name:document.getElementById('acc-name').value,email:document.getElementById('acc-email').value,phone:document.getElementById('acc-phone').value})});const j=await r.json();msg.className='msg '+(r.ok?'success':'error');msg.textContent=j.status==='saved'?'Settings saved.':(j.error||'Error');}catch{msg.className='msg error';msg.textContent='Connection error.';}
 if(btn){btn.disabled=false;btn.textContent='Save Changes';}
 });
 
@@ -140,7 +140,7 @@ if (verifyBtn) {
     verifyMsg.textContent = 'Sending...';
     verifyBtn.disabled = true;
     try {
-      const r = await fetch('/portal/api/send-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/send-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
       const j = await r.json();
       verifyMsg.className = 'msg ' + (r.ok ? 'success' : 'error');
       verifyMsg.textContent = r.ok ? 'Verification email sent.' : (j.error || 'Error');
@@ -162,7 +162,7 @@ document.getElementById('sms-save').addEventListener('click', async () => {
       sms_phone: document.getElementById('sms-phone').value,
       sms_carrier: document.getElementById('sms-carrier').value,
     };
-    const r = await fetch('/portal/api/account', {
+    const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/account', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' },
       body: JSON.stringify(body)
@@ -185,7 +185,7 @@ document.getElementById('sms-test').addEventListener('click', async () => {
       carrier: document.getElementById('sms-carrier').value,
       message: 'Test SMS from AnswerFirst AI portal.',
     };
-    const r = await fetch('/portal/api/sms/send', {
+    const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/sms/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' },
       body: JSON.stringify(body)
@@ -228,7 +228,7 @@ document.getElementById('sms-test').addEventListener('click', async () => {
     submitBtn.textContent = 'Submitting...';
     const token = document.cookie.split('; ').find(row => row.startsWith('portal_token='))?.split('=')[1];
     try {
-      const r = await fetch('/portal/api/satisfaction', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' }, body: JSON.stringify({ score: selected, notes: notesEl ? notesEl.value : '' }) });
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/satisfaction', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' }, body: JSON.stringify({ score: selected, notes: notesEl ? notesEl.value : '' }) });
       const j = await r.json();
       if (msgEl) { msgEl.className = 'msg ' + (r.ok ? 'success' : 'error'); msgEl.textContent = r.ok ? 'Thanks! Your feedback was saved.' : (j.error || 'Error'); msgEl.style.display = 'block'; }
     } catch {

@@ -14,19 +14,6 @@ CORS(app)
 app.secret_key = os.environ.get("PORTAL_SECRET", secrets.token_hex(32))
 DB_PATH = os.environ.get("PORTAL_DB_PATH", os.path.join(os.path.dirname(__file__), "portal.db"))
 
-# ===================== STATIC PUBLIC SITE =====================
-PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public-site')
-
-@app.route('/')
-def unified_root():
-    return send_from_directory(PUBLIC_DIR, 'index.html')
-
-@app.route('/<path:filename>')
-def unified_static(filename):
-    full = os.path.join(PUBLIC_DIR, filename)
-    if os.path.isfile(full):
-        return send_from_directory(PUBLIC_DIR, filename)
-    return send_from_directory(PUBLIC_DIR, 'index.html')
 
 # Vercel serverless optimization
 if os.environ.get('VERCEL'):
@@ -1106,3 +1093,28 @@ def portal_logout():
     return resp
 
 # ===================== PUBLIC HTML =====================
+
+# ===================== HEALTH CHECK =====================
+@app.route('/portal/api/health', methods=['GET'])
+def health_check():
+    try:
+        db = get_db()
+        db.execute('SELECT 1')
+        db.close()
+        return jsonify({'status': 'ok', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'detail': str(e)}), 500
+
+# ===================== STATIC PUBLIC SITE =====================
+PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public-site')
+
+@app.route('/')
+def unified_root():
+    return send_from_directory(PUBLIC_DIR, 'index.html')
+
+@app.route('/<path:filename>')
+def unified_static(filename):
+    full = os.path.join(PUBLIC_DIR, filename)
+    if os.path.isfile(full):
+        return send_from_directory(PUBLIC_DIR, filename)
+    return send_from_directory(PUBLIC_DIR, 'index.html')
