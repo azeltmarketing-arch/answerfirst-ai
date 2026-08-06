@@ -1206,3 +1206,7 @@ def unified_static(filename):
     if os.path.isfile(full):
         return send_from_directory(PUBLIC_DIR, filename)
     return send_from_directory(PUBLIC_DIR, 'index.html')
+
+if __name__ == '__main__':
+    create_tables()
+    app.run(host='0.0.0.0', port=5070, debug=False, use_reloader=False)
