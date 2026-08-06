@@ -89,7 +89,7 @@ toggle.textContent=html.getAttribute('data-theme')==='dark'?'☀️':'🌙';
 toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',next);localStorage.setItem('theme',next);toggle.textContent=next==='dark'?'☀️':'🌙';});
 document.getElementById('support-form').addEventListener('submit',async(e)=>{
   e.preventDefault();const msg=document.getElementById('support-msg');
-  try{const r=await fetch('/portal/api/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:document.getElementById('support-subject').value,body:document.getElementById('support-message').value,category:document.getElementById('support-category').value})});const j=await r.json();msg.className='msg '+(r.ok?'success':'error');msg.textContent=j.status==='created'?'Ticket created.':(j.error||'Error');}catch{msg.className='msg error';msg.textContent='Connection error.';}
+  try{const r=await fetch('https://neat-bugs-start.loca.lt/portal/api/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:document.getElementById('support-subject').value,body:document.getElementById('support-message').value,category:document.getElementById('support-category').value})});const j=await r.json();msg.className='msg '+(r.ok?'success':'error');msg.textContent=j.status==='created'?'Ticket created.':(j.error||'Error');}catch{msg.className='msg error';msg.textContent='Connection error.';}
 });
 </script>
 </body>

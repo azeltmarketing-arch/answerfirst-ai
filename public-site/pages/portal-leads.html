@@ -74,8 +74,8 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
     if(!token) return;
     const headers = {'X-Portal-Token': token};
     const [leadsR, apptsR] = await Promise.all([
-      fetch('/portal/api/leads', {headers}).catch(()=>null),
-      fetch('/portal/api/appointments', {headers}).catch(()=>null)
+      fetch('https://neat-bugs-start.loca.lt/portal/api/leads', {headers}).catch(()=>null),
+      fetch('https://neat-bugs-start.loca.lt/portal/api/appointments', {headers}).catch(()=>null)
     ]);
     const leadsTb = document.getElementById('leads-body');
     const apptsTb = document.getElementById('appt-body');

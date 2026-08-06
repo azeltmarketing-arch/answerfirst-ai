@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+[data-theme="dark"] .nav-cta { color: #000 !important; background: #fff !important; }<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
@@ -49,6 +50,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <label class="form-label">Password</label>
       <input type="password" class="form-input" id="login-password" required>
     </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:-8px;">
+      <input type="checkbox" id="remember-me" style="width:18px;height:18px;accent-color:var(--accent);">
+      <label for="remember-me" style="font-size:0.9rem;color:var(--text-muted);cursor:pointer;">Remember me</label>
+    </div>
     <button type="submit" class="btn btn-primary">Log In</button>
     <div class="error-msg" id="login-error"></div>
     <div id="verify-banner" style="display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(16,185,129,0.12);color:#047857;font-size:0.9rem;font-weight:600;border:1px solid rgba(16,185,129,0.3);">
@@ -70,14 +75,14 @@ document.getElementById('login-form').addEventListener('submit',async(e)=>{
   e.preventDefault();const err=document.getElementById('login-error');
   const btn=e.target.querySelector('button[type="submit"]');
   if(btn){btn.disabled=true;btn.textContent='Logging in...';}
-  try{const r=await fetch('/portal/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('login-email').value,password:document.getElementById('login-password').value})});const j=await r.json();if(r.ok&&j._session_token){window.location.href='/portal-dashboard.html';}else{err.style.display='block';err.textContent=j.error||'Login failed';if(j.verification_required){const b=document.getElementById('verify-banner');if(b){b.style.display='block';}}}}catch(ex){err.style.display='block';err.textContent='Connection error';}
+  try{const r=await fetch('https://neat-bugs-start.loca.lt/portal/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('login-email').value,password:document.getElementById('login-password').value})});const j=await r.json();if(r.ok&&j._session_token){window.location.href='/portal-dashboard.html';}else{err.style.display='block';err.textContent=j.error||'Login failed';if(j.verification_required){const b=document.getElementById('verify-banner');if(b){b.style.display='block';}}}}catch(ex){err.style.display='block';err.textContent='Connection error';}
   if(btn){btn.disabled=false;btn.textContent='Log In';}
 });
 document.getElementById('forgot-link').addEventListener('click',e=>{
   e.preventDefault();
   const email=prompt('Enter your email and we will send you a password reset link.','');
   if(email){
-    fetch('/portal/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r.json()).then(j=>{alert(j.status==='ok'?'If an account exists, a reset email was sent.':(j.error||'Error'));}).catch(()=>alert('Connection error.'));
+    fetch('https://neat-bugs-start.loca.lt/portal/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}).then(r=>r.json()).then(j=>{alert(j.status==='ok'?'If an account exists, a reset email was sent.':(j.error||'Error'));}).catch(()=>alert('Connection error.'));
   }
 });
 </script>
