@@ -20,11 +20,6 @@ if os.environ.get('VERCEL'):
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 
-# Initialize database on first request
-@app.before_first_request
-def initialize_db():
-    create_tables()
-
 # ===================== SMTP / SMS =====================
 
 SMS_CARRIER_GATEWAYS = {
@@ -93,9 +88,7 @@ def log_activity(client_id: int, activity_type: str, title: str, body: str = "",
 # ===================== DATABASE =====================
 
 def create_tables():
-    conn def create_tables():
-    create_tables()
-= sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
         CREATE TABLE IF NOT EXISTS clients (
