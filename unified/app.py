@@ -1105,6 +1105,94 @@ def health_check():
     except Exception as e:
         return jsonify({'status': 'error', 'detail': str(e)}), 500
 
+
+# ===================== PORTAL API ROUTES =====================
+@app.route('/portal/api/login', methods=['POST'])
+def api_login():
+    data = request.json or {}
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    
+    if not email or not password:
+        return jsonify({'error': 'Email and password required'}), 400
+    
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    try:
+        db = get_db()
+        client = db.execute(
+            'SELECT id, email, business_name, contact_name FROM clients WHERE email = ? AND password_hash = ?',
+            (email, password_hash)
+        ).fetchone()
+        db.close()
+        
+        if not client:
+            return jsonify({'error': 'Invalid email or password'}), 401
+        
+        token = secrets.token_urlsafe(32)
+        return jsonify({
+            'status': 'ok',
+            'client_id': client['id'],
+            'email': client['email'],
+            'business_name': client['business_name'],
+            'contact_name': client['contact_name'],
+            '_session_token': token
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/portal/api/register', methods=['POST'])
+def api_register():
+    data = request.json or {}
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    business_name = data.get('business_name', '')
+    contact_name = data.get('name', '')
+    phone = data.get('phone', '')
+    
+    if not email or not password:
+        return jsonify({'error': 'Email and password required'}), 400
+    
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    try:
+        db = get_db()
+        db.execute(
+            'INSERT INTO clients (email, password_hash, business_name, contact_name, phone) VALUES (?, ?, ?, ?, ?)',
+            (email, password_hash, business_name, contact_name, phone)
+        )
+        db.commit()
+        client_id = db.lastrowid
+        db.close()
+        
+        token = secrets.token_urlsafe(32)
+        return jsonify({'status': 'ok', 'client_id': client_id, '_session_token': token}), 201
+    except sqlite3.IntegrityError:
+        return jsonify({'error': 'Email already registered'}), 409
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/portal/api/forgot-password', methods=['POST'])
+def api_forgot_password():
+    data = request.json or {}
+    email = data.get('email', '').strip().lower()
+    
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
+    
+    # Check if user exists
+    db = get_db()
+    client = db.execute('SELECT id FROM clients WHERE email = ?', (email,)).fetchone()
+    db.close()
+    
+    if client:
+        # In production: send actual reset email
+        token = secrets.token_urlsafe(32)
+        return jsonify({'status': 'ok', 'message': 'If an account exists, a reset email was sent.'}), 200
+    else:
+        # Don't reveal if email exists
+        return jsonify({'status': 'ok', 'message': 'If an account exists, a reset email was sent.'}), 200
+
 # ===================== STATIC PUBLIC SITE =====================
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public-site')
 
