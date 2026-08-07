@@ -108,8 +108,10 @@ body {
 }
 
 .studies-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 28px;
+  align-items: stretch;
 }
 .study-card {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -148,7 +150,8 @@ body {
 .cta-section {
   padding: 100px 5%;
   background: linear-gradient(135deg, var(--bg-alt), var(--bg));
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 .cta-inner {
   max-width: 900px; margin: 0 auto; text-align: center;
