@@ -427,6 +427,9 @@ def discover_leads():
     skipped_no_contact = 0
     
     for biz in businesses:
+        if getattr(app, '_discovery_stop', False):
+            break
+        
         scraped = scrape_website(biz['url'], deep_scrape=True)
         
         if scraped['has_ai']:
@@ -474,6 +477,8 @@ def discover_leads():
     conn.commit()
     conn.close()
     
+    app._discovery_stop = False
+    
     return jsonify({
         'added': saved,
         'total_scraped': len(businesses),
@@ -481,6 +486,12 @@ def discover_leads():
         'skipped_no_contact': skipped_no_contact,
         'prospects': prospects
     })
+
+
+@app.route('/api/discovery/stop', methods=['POST'])
+def stop_discovery():
+    app._discovery_stop = True
+    return jsonify({'stopped': True})
 
 
 @app.route('/api/leads')
