@@ -110,10 +110,6 @@ def create_tables():
             sms_notifications INTEGER DEFAULT 0
         )
     """)
-
-# Initialize DB on import so tables exist even when run via gunicorn/import
-create_tables()
-
     c.execute("""
         CREATE TABLE IF NOT EXISTS contacts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -292,8 +288,6 @@ create_tables()
     conn.close()
     _migrate_db()
 
-# Initialize database on import
-create_tables()
 
 
 def _migrate_db():
