@@ -1446,8 +1446,8 @@ def api_login():
         
         if not client:
             return jsonify({'error': 'Invalid email or password'}), 401
-        
-        token = secrets.token_urlsafe(32)
+    
+        token = create_session(client['id'])
         return jsonify({
             'status': 'ok',
             'client_id': client['id'],
@@ -1484,7 +1484,7 @@ def api_register():
         client_id = c.lastrowid
         db.close()
         
-        token = secrets.token_urlsafe(32)
+        token = create_session(client_id)
         return jsonify({'status': 'ok', 'client_id': client_id, '_session_token': token}), 201
     except sqlite3.IntegrityError:
         return jsonify({'error': 'Email already registered'}), 409
