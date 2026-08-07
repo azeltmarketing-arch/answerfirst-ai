@@ -494,7 +494,7 @@ def get_client_from_session(token: str):
 
 
 def require_client():
-    token = request.cookies.get("portal_token")
+    token = request.cookies.get("portal_token") or request.headers.get("X-Portal-Token")
     client = get_client_from_session(token) if token else None
     if not client:
         return None
