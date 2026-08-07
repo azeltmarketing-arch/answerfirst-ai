@@ -2,6 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AnswerFirst AI — Leads</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,21 +35,28 @@ tr:last-child td{border-bottom:none;}
 .badge-gray{background:rgba(100,116,139,0.15);color:var(--text-muted);}
 .empty-state{text-align:center;padding:48px;color:var(--text-muted);}
 @media(max-width:768px){.nav-links{display:none;}}
+.btn{width:auto;padding:12px 24px;border-radius:100px;font-weight:600;font-size:0.95rem;border:none;cursor:pointer;transition:transform var(--transition),box-shadow var(--transition);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;box-shadow:0 4px 15px var(--accent-glow);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px var(--accent-glow);}
+.form-input{padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg-alt);color:var(--text);font-family:inherit;font-size:0.95rem;}
+.form-input:focus{outline:none;border-color:var(--accent);}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-weight:600;margin-bottom:6px;font-size:0.85rem;}
 </style>
 </head>
 <body>
 <nav class="nav">
   <a href="/" class="nav-logo"><div class="nav-logo-icon">A</div><span>AnswerFirst AI</span></a>
   <div class="nav-links">
-    <a href="/portal/dashboard" class="nav-link">Dashboard</a>
-    <a href="/portal/appointments" class="nav-link">Appointments</a>
-    <a href="/portal/leads" class="nav-link active">Leads</a>
-    <a href="/portal/billing" class="nav-link">Billing</a>
-    <a href="/portal/support" class="nav-link">Support</a>
-    <a href="/portal/calls" class="nav-link">Calls</a>
-    <a href="/portal/onboarding" class="nav-link">Onboarding</a>
-    <a href="/portal/documents" class="nav-link">Documents</a>
-    <a href="/portal/account" class="nav-link">Account</a>
+    <a href="/portal-dashboard.html" class="nav-link">Dashboard</a>
+    <a href="/portal-appointments.html" class="nav-link">Appointments</a>
+    <a href="/portal-leads.html" class="nav-link active">Leads</a>
+    <a href="/portal-billing.html" class="nav-link">Billing</a>
+    <a href="/portal-support.html" class="nav-link">Support</a>
+    <a href="/portal-calls.html" class="nav-link">Calls</a>
+    <a href="/portal-onboarding.html" class="nav-link">Onboarding</a>
+    <a href="/portal-documents.html" class="nav-link">Documents</a>
+    <a href="/portal-account.html" class="nav-link">Account</a>
     <button class="theme-toggle" id="themeToggle">🌙</button>
     <a href="#" class="nav-link" onclick="document.cookie='portal_token=; Max-Age=0; path=/;
 location.href='/portal/login';">Logout</a>
@@ -57,10 +65,40 @@ location.href='/portal/login';">Logout</a>
 <div class="main">
   <div class="page-header">
     <h1 class="page-title">Leads</h1>
-    <p class="page-subtitle">Track your incoming leads and conversion status.</p>
+    <p class="page-subtitle">Manage leads, follow-up sequences, and attribution.</p>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+    <button class="btn btn-primary" id="btn-add-lead">+ Add Lead</button>
+    <select id="filter-status" class="form-input" style="width:auto;padding:10px 14px;border-radius:100px;">
+      <option value="">All Statuses</option>
+      <option value="new">New</option>
+      <option value="contacted">Contacted</option>
+      <option value="qualified">Qualified</option>
+      <option value="converted">Converted</option>
+      <option value="lost">Lost</option>
+    </select>
+    <input type="text" id="search-leads" class="form-input" placeholder="Search leads..." style="flex:1;min-width:180px;">
   </div>
   <div class="table-container">
-    <table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Source</th><th>Status</th></tr></thead><tbody id="leads-body"><tr><td colspan="5" class="empty-state">No leads yet.</td></tr></tbody></table>
+    <table><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Source</th><th>Score</th><th>Status</th><th>Actions</th></tr></thead><tbody id="leads-body"><tr><td colspan="7" class="empty-state">No leads yet.</td></tr></tbody></table>
+  </div>
+</div>
+
+<div id="lead-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:90%;max-width:520px;max-height:90vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="font-size:1.1rem;font-weight:700;">Add Lead</h2>
+      <button id="close-modal" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+    </div>
+    <form id="lead-form">
+      <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="l-name" required></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="l-email" type="email"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="l-phone"></div>
+      <div class="form-group"><label class="form-label">Company</label><input class="form-input" id="l-company"></div>
+      <div class="form-group"><label class="form-label">Source</label><input class="form-input" id="l-source" placeholder="website, ads, referral"></div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input" id="l-notes" rows="3"></textarea></div>
+      <button type="submit" class="btn btn-primary">Save Lead</button>
+    </form>
   </div>
 </div>
 <script>
@@ -75,8 +113,8 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
     if(!token) return;
     const headers = {'X-Portal-Token': token};
     const [leadsR, apptsR] = await Promise.all([
-      fetch('https://neat-bugs-start.loca.lt/portal/api/leads', {headers}).catch(()=>null),
-      fetch('https://neat-bugs-start.loca.lt/portal/api/appointments', {headers}).catch(()=>null)
+      fetch('/portal/api/leads', {headers}).catch(()=>null),
+      fetch('/portal/api/appointments', {headers}).catch(()=>null)
     ]);
     const leadsTb = document.getElementById('leads-body');
     const apptsTb = document.getElementById('appt-body');
