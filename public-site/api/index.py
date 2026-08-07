@@ -138,21 +138,6 @@ def login():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/portal/api/logout', methods=['POST'])
-def logout():
-    token = request.cookies.get('portal_token') or request.json.get('token') if request.is_json else None
-    if token:
-        try:
-            db = get_db()
-            db.execute('DELETE FROM sessions WHERE token = ?', (token,))
-            db.commit()
-            db.close()
-        except Exception:
-            pass
-    resp = jsonify({'status': 'ok'})
-    resp.delete_cookie('portal_token')
-    return resp
-
-@app.route('/portal/api/logout', methods=['POST'])
 def logout_api():
     token = None
     if request.is_json:
