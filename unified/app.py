@@ -1166,12 +1166,13 @@ def api_register():
     
     try:
         db = get_db()
-        db.execute(
+        c = db.cursor()
+        c.execute(
             'INSERT INTO clients (email, password_hash, business_name, contact_name, phone) VALUES (?, ?, ?, ?, ?)',
             (email, password_hash, business_name, contact_name, phone)
         )
         db.commit()
-        client_id = db.lastrowid
+        client_id = c.lastrowid
         db.close()
         
         token = secrets.token_urlsafe(32)
