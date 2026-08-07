@@ -1484,8 +1484,10 @@ def api_register():
         client_id = c.lastrowid
         db.close()
         
-        token = create_session(client_id)
-        return jsonify({'status': 'ok', 'client_id': client_id, '_session_token': token}), 201
+        token = create_jwt(client_id)
+        resp = make_response(jsonify({'status': 'ok', 'client_id': client_id, '_session_token': token}))
+        resp.set_cookie('portal_token', token, max_age=7*24*60*60, httponly=True, samesite='Lax')
+        return resp, 201
     except sqlite3.IntegrityError:
         return jsonify({'error': 'Email already registered'}), 409
     except Exception as e:
