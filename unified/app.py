@@ -5,12 +5,13 @@ Port: 5070
 
 from flask import Flask, render_template_string, request, jsonify, redirect, url_for, make_response, send_from_directory
 from flask_cors import CORS
+JWT_SECRET = os.environ.get('JWT_SECRET', secrets.token_hex(32))
 import sqlite3, os, secrets, hashlib, smtplib, ssl
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True, origins=["https://answerfirst-ai.vercel.app", "https://*.vercel.app"])
 app.secret_key = os.environ.get("PORTAL_SECRET", secrets.token_hex(32))
 DB_PATH = os.environ.get("PORTAL_DB_PATH", os.path.join(os.path.dirname(__file__), "portal.db"))
 
@@ -470,25 +471,24 @@ def verify_password(password: str, password_hash: str) -> bool:
     return hash_password(password) == password_hash
 
 
-def create_session(client_id: int) -> str:
-    token = secrets.token_urlsafe(32)
-    expires = datetime.now().timestamp() + 7 * 24 * 60 * 60
-    db = get_db()
-    db.execute(
-        "INSERT INTO sessions (token, client_id, expires_at) VALUES (?, ?, ?)",
-        (token, client_id, datetime.fromtimestamp(expires).isoformat()),
-    )
-    db.commit()
-    db.close()
-    return token
+def create_jwt(client_id: int) -> str:
+    payload = {
+        'client_id': client_id,
+        'exp': datetime.now().timestamp() + 7 * 24 * 60 * 60,
+        'iat': datetime.now().timestamp()
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
 
 
 def get_client_from_session(token: str):
+    if not token:
+        return None
+    try:
+        data = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+    except Exception:
+        return None
     db = get_db()
-    row = db.execute(
-        "SELECT c.* FROM sessions s JOIN clients c ON s.client_id = c.id WHERE s.token = ? AND s.expires_at > ?",
-        (token, datetime.now().isoformat()),
-    ).fetchone()
+    row = db.execute('SELECT * FROM clients WHERE id = ?', (data['client_id'],)).fetchone()
     db.close()
     return dict(row) if row else None
 
@@ -1376,7 +1376,7 @@ def portal_register():
     db.commit()
     client = db.execute('SELECT * FROM clients WHERE email = ?', (email,)).fetchone()
     db.close()
-    token = create_session(client['id'])
+    token = create_jwt(client['id'])
     resp = jsonify({'client': dict(client)})
     resp.set_cookie('portal_token', token, max_age=7*24*60*60, httponly=True, samesite='Lax')
     return resp
@@ -1392,7 +1392,7 @@ def portal_login():
     db.close()
     if not client or not verify_password(password, client['password_hash']):
         return jsonify({'error': 'Invalid credentials'}), 401
-    token = create_session(client['id'])
+    token = create_jwt(client['id'])
     resp = jsonify({'client': dict(client)})
     resp.set_cookie('portal_token', token, max_age=7*24*60*60, httponly=True, samesite='Lax')
     return resp
@@ -1447,7 +1447,7 @@ def api_login():
         if not client:
             return jsonify({'error': 'Invalid email or password'}), 401
     
-        token = create_session(client['id'])
+        token = create_jwt(client['id'])
         return jsonify({
             'status': 'ok',
             'client_id': client['id'],
