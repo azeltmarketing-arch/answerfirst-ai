@@ -405,6 +405,21 @@ body {
   border-top: 1px solid var(--border);
 }
 
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.results-grid .service-card {
+  text-align: center;
+}
+.results-grid .service-icon {
+  margin: 0 auto 16px;
+}
+
 @media (max-width: 768px) {
   .nav-links { display: none; }
   .mobile-menu-btn { display: block; }
@@ -637,7 +652,7 @@ body {
       Real outcomes from our SEO program for contractors. Every number is tied to organic search.
     </p>
   </div>
-  <div class="services-grid">
+  <div class="results-grid">
     <div class="service-card">
       <div class="service-icon">📈</div>
       <div class="service-title">Traffic Growth</div>
