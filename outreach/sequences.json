@@ -1,0 +1,44 @@
+[
+  {
+    "id": "seq-cold-intro-1",
+    "name": "Cold Intro — HVAC/Roofing",
+    "subject": "Quick question about {{company}}'s scheduling",
+    "body": "Hi {{first_name}},\n\nI was looking at {{company}}'s website and noticed you're serving the {{market}} area.\n\nWe run an AI appointment-setting system built specifically for HVAC and roofing contractors. It fills your calendar in 14 days — or you owe nothing.\n\nWould you be open to a 15-minute demo this week?\n\nBest,\nAndrew\nAnswerFirst AI\n562-259-3384",
+    "cta": "Reply for a 15-minute demo",
+    "type": "cold",
+    "follow_up_sequence": ["seq-follow-up-1", "seq-follow-up-2", "seq-follow-up-3"]
+  },
+  {
+    "id": "seq-follow-up-1",
+    "name": "Follow-Up 1 — Value",
+    "subject": "How one HVAC crew added more jobs in 30 days",
+    "body": "Hi {{first_name}},\n\nQuick follow-up. One of our HVAC clients went from 3 leads/week to 18 in 30 days using our AI appointment setter.\n\nThe system handles calls, texts, and booking 24/7.\n\nWorth a look?\n\nAndrew",
+    "cta": "See how it works",
+    "type": "follow_up",
+    "follow_up_sequence": ["seq-follow-up-2"]
+  },
+  {
+    "id": "seq-follow-up-2",
+    "name": "Follow-Up 2 — Social Proof",
+    "subject": "{{company}} + 24/7 AI = more jobs",
+    "body": "Hi {{first_name}},\n\nMost contractors we work with lose 30-40% of incoming calls to voicemail or after-hours.\n\nOur AI answers every call, qualifies the lead, and books the appointment — even at 2 AM.\n\nIf you want to stop leaving money on the table, let me know.\n\nAndrew",
+    "cta": "Reply to stop missing calls",
+    "type": "follow_up"
+  },
+  {
+    "id": "seq-follow-up-3",
+    "name": "Follow-Up 3 — Break-Up",
+    "subject": "Should I close your file?",
+    "body": "Hi {{first_name}},\n\nI haven't heard back, so I'm assuming now isn't the right time for {{company}} to add an AI appointment setter.\n\nI'll close your file for now. If things change, just reply and we'll pick up where we left off.\n\nAndrew\nAnswerFirst AI",
+    "cta": "No response needed — file closing",
+    "type": "follow_up"
+  },
+  {
+    "id": "seq-referral-partner",
+    "name": "Referral Partner — Real Estate / Property Mgmt",
+    "subject": "Partnering for more clients",
+    "body": "Hi {{first_name}},\n\nI run AnswerFirst AI — we set appointments for HVAC and roofing contractors using AI.\n\nI'm looking to partner with real estate agents and property managers who regularly refer clients to contractors.\n\nIf you're open to it, I'd love to share how we can make that referral process smoother and more profitable for both sides.\n\nBest,\nAndrew",
+    "cta": "Let's talk partnership",
+    "type": "partnership"
+  }
+]
