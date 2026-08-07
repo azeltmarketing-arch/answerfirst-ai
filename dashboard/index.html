@@ -997,36 +997,8 @@
             <!-- Leads Section -->
             <div id="leads" class="section">
                 <h1 class="section-title">Lead Manager</h1>
-                <div class="card" style="margin-bottom: 16px;">
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-                        <div>
-                            <div class="card-title">All Leads</div>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Auto-discovered HVAC/roofing leads with contact info and send history.</div>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-primary" onclick="autoDiscoverLeads()">Auto Discover Leads</button>
-                            <button class="btn-outline" onclick="importLeadCsv()">Import CSV</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div style="overflow-x: auto;">
-                        <table id="leads-table">
-                            <thead>
-                                <tr>
-                                    <th>Business</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Website</th>
-                                    <th>Fit</th>
-                                    <th>Pain</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="leads-tbody"></tbody>
-                        </table>
-                    </div>
+                <div class="card" style="padding:0;overflow:hidden;">
+                    <iframe id="hub-frame" src="http://127.0.0.1:5050" style="width:100%;height:85vh;border:none;background:#0a0a0f;"></iframe>
                 </div>
             </div>
 
