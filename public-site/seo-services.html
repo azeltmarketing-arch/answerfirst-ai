@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SEO Services — AnswerFirst AI</title>
@@ -482,7 +489,7 @@ body {
       </div>
     </div>
     <div class="hero-3d">
-      <div class="hero-visual">🔍</div>
+      <canvas id="seo-canvas"></canvas>
     </div>
   </div>
 </section>
@@ -850,6 +857,114 @@ body {
     const style = document.createElement('style');
     style.textContent = `.nav-links.nav-open{display:flex!important;position:absolute;top:72px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);padding:16px 5%;flex-direction:column;gap:16px;}`;
     document.head.appendChild(style);
+  }
+</script>
+<script type="module">
+  import * as THREE from 'three';
+
+  const canvas = document.getElementById('seo-canvas');
+  if (canvas) {
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 2, 6);
+    camera.lookAt(0, 0, 0);
+
+    // Lighting
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const dirLight = new THREE.DirectionalLight(0x3b82f6, 1.2);
+    dirLight.position.set(5, 5, 5);
+    scene.add(dirLight);
+    const pointLight = new THREE.PointLight(0x10b981, 0.8, 20);
+    pointLight.position.set(-3, 2, 2);
+    scene.add(pointLight);
+
+    // Central orb
+    const orbGeom = new THREE.IcosahedronGeometry(1.2, 2);
+    const orbMat = new THREE.MeshPhysicalMaterial({
+      color: 0x3b82f6,
+      metalness: 0.1,
+      roughness: 0.2,
+      transmission: 0.3,
+      thickness: 0.5,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1
+    });
+    const orb = new THREE.Mesh(orbGeom, orbMat);
+    orb.position.set(1.5, 0, 0);
+    scene.add(orb);
+
+    // Orbiting ring
+    const ringGeom = new THREE.TorusGeometry(1.8, 0.03, 16, 100);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.3 });
+    const ring = new THREE.Mesh(ringGeom, ringMat);
+    ring.position.copy(orb.position);
+    ring.rotation.x = Math.PI * 0.5;
+    scene.add(ring);
+
+    // Orbiting satellites
+    const satGroup = new THREE.Group();
+    scene.add(satGroup);
+    const sats = [];
+    for (let i = 0; i < 6; i++) {
+      const satGeom = new THREE.SphereGeometry(0.08, 16, 16);
+      const satMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0.4 });
+      const sat = new THREE.Mesh(satGeom, satMat);
+      const angle = (i / 6) * Math.PI * 2;
+      sat.userData = { angle, radius: 1.8 + Math.random() * 0.4, speed: 0.3 + Math.random() * 0.3, yOff: (Math.random() - 0.5) * 0.6 };
+      sats.push(sat);
+      satGroup.add(sat);
+    }
+
+    // Particles
+    const particleCount = 120;
+    const pGeom = new THREE.BufferGeometry();
+    const pPos = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      pPos[i*3] = (Math.random() - 0.5) * 8;
+      pPos[i*3+1] = (Math.random() - 0.5) * 5;
+      pPos[i*3+2] = (Math.random() - 0.5) * 4;
+    }
+    pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.03, transparent: true, opacity: 0.6 });
+    const particles = new THREE.Points(pGeom, pMat);
+    scene.add(particles);
+
+    function resize() {
+      const parent = canvas.parentElement;
+      const w = parent.clientWidth;
+      const h = parent.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Animate
+    const clock = new THREE.Clock();
+    (function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      orb.rotation.y = t * 0.3;
+      orb.rotation.x = Math.sin(t * 0.2) * 0.1;
+      ring.rotation.z = t * 0.2;
+      satGroup.rotation.y = t * 0.15;
+      sats.forEach(s => {
+        s.userData.angle += s.userData.speed * 0.01;
+        const a = s.userData.angle;
+        s.position.set(
+          Math.cos(a) * s.userData.radius,
+          s.userData.yOff + Math.sin(t + a) * 0.2,
+          Math.sin(a) * s.userData.radius
+        );
+      });
+      particles.rotation.y = t * 0.02;
+      renderer.render(scene, camera);
+    })();
   }
 </script>
 </body>
