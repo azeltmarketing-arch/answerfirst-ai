@@ -416,6 +416,38 @@ def _migrate_sms_prefs():
     conn.close()
 
 
+def score_lead(lead: dict) -> int:
+    score = 0
+    if lead.get('email'):
+        score += 10
+    if lead.get('phone'):
+        score += 10
+    if lead.get('company'):
+        score += 10
+    source = (lead.get('source') or '').lower()
+    if source in {'referral', 'organic'}:
+        score += 20
+    elif source in {'ads', 'paid'}:
+        score += 5
+    campaign = (lead.get('campaign') or '').lower()
+    if campaign:
+        score += 5
+    notes = (lead.get('notes') or '').lower()
+    high_intent = ['budget','ready','buy','purchase','hire','timeline','asap','urgent']
+    if any(k in notes for k in high_intent):
+        score += 20
+    return min(score, 100)
+
+
+def route_lead(lead: dict):
+    score = score_lead(lead)
+    if score >= 70:
+        return {'tier': 'hot', 'suggested_action': 'call_now', 'priority': 'high'}
+    if score >= 40:
+        return {'tier': 'warm', 'suggested_action': 'follow_up_email', 'priority': 'medium'}
+    return {'tier': 'cold', 'suggested_action': 'nurture_sequence', 'priority': 'low'}
+
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -1199,6 +1231,93 @@ def portal_create_lead_sequence(lead_id: int):
     seq_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
     db.close()
     return jsonify({'status': 'created', 'sequence_id': seq_id, 'step_number': step_number}), 201
+
+
+# ===================== FOLLOW-UP EXECUTION ENGINE =====================
+
+def _send_email(to: str, subject: str, body: str) -> dict:
+    if not GMAIL_APP_PASSWORD:
+        return {'status': 'error', 'error': 'SMTP not configured'}
+    msg = MIMEText(body)
+    msg['From'] = GMAIL_SENDER
+    msg['To'] = to
+    msg['Subject'] = subject
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(GMAIL_SMTP_SERVER, GMAIL_SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(GMAIL_SENDER, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_SENDER, to, msg.as_string())
+        return {'status': 'sent', 'to': to, 'sent_at': datetime.now().isoformat()}
+    except Exception as e:
+        return {'status': 'error', 'error': str(e)}
+
+SEQUENCE_TEMPLATES = {
+    'new_lead_email_1': {
+        'subject': 'Thanks for reaching out',
+        'body': 'Hi {name}, thanks for contacting AnswerFirst AI. We received your inquiry and would love to learn more about your business. Reply to this email or book a time that works for you.'
+    },
+    'new_lead_email_2': {
+        'subject': 'Quick question about your needs',
+        'body': 'Hi {name}, following up on your recent inquiry. Are you still looking for an AI receptionist or SEO help? Let me know and I will send over a custom plan.'
+    },
+    'welcome_sequence': {
+        'subject': 'Welcome to AnswerFirst AI',
+        'body': 'Hi {name}, welcome aboard. Your onboarding checklist is ready in your portal. If you have any questions, just reply.'
+    },
+    're_engage': {
+        'subject': 'Still interested?',
+        'body': 'Hi {name}, it has been a few days since we connected. If you are ready to move forward, I am here to help.'
+    }
+}
+
+
+@app.route('/portal/api/leads/<int:lead_id>/sequences/<int:seq_id>/send', methods=['POST'])
+def portal_send_sequence_now(lead_id: int, seq_id: int):
+    client = require_client()
+    if not client:
+        return jsonify({'error': 'Unauthorized'}), 401
+    db = get_db()
+    lead = db.execute('SELECT * FROM leads WHERE id = ? AND client_id = ?', (lead_id, client['id'])).fetchone()
+    seq = db.execute('SELECT * FROM lead_sequences WHERE id = ? AND lead_id = ?', (seq_id, lead_id)).fetchone()
+    if not lead or not seq:
+        db.close()
+        return jsonify({'error': 'Lead or sequence not found'}), 404
+    template = SEQUENCE_TEMPLATES.get(seq['template_name'], SEQUENCE_TEMPLATES['new_lead_email_1'])
+    subject = template['subject']
+    body = template['body'].replace('{name}', lead['name'] or 'there')
+    result = {'status': 'skipped'}
+    if seq['channel'] == 'email' and lead['email']:
+        result = _send_email(lead['email'], subject, body)
+    db.execute('UPDATE lead_sequences SET sent_at = ?, status = ? WHERE id = ?', (datetime.now().isoformat(), result.get('status','sent'), seq_id))
+    db.execute('UPDATE leads SET last_contacted_at = ?, follow_up_count = follow_up_count + 1 WHERE id = ?', (datetime.now().isoformat(), lead_id))
+    db.commit()
+    db.close()
+    return jsonify({'status': 'executed', 'result': result})
+
+
+@app.route('/portal/api/sequences/run-due', methods=['POST'])
+def portal_run_due_sequences():
+    client = require_client()
+    if not client:
+        return jsonify({'error': 'Unauthorized'}), 401
+    db = get_db()
+    now = datetime.now().isoformat()
+    rows = db.execute('SELECT s.*, l.email, l.name FROM lead_sequences s JOIN leads l ON l.id = s.lead_id WHERE l.client_id = ? AND s.status = ? AND s.scheduled_at <= ?', (client['id'], 'pending', now)).fetchall()
+    results = []
+    for seq in rows:
+        template = SEQUENCE_TEMPLATES.get(seq['template_name'], SEQUENCE_TEMPLATES['new_lead_email_1'])
+        subject = template['subject']
+        body = template['body'].replace('{name}', seq['name'] or 'there')
+        result = {'status': 'skipped'}
+        if seq['channel'] == 'email' and seq['email']:
+            result = _send_email(seq['email'], subject, body)
+        db.execute('UPDATE lead_sequences SET sent_at = ?, status = ? WHERE id = ?', (datetime.now().isoformat(), result.get('status','sent'), seq['id']))
+        db.execute('UPDATE leads SET last_contacted_at = ?, follow_up_count = follow_up_count + 1 WHERE id = ?', (datetime.now().isoformat(), seq['lead_id']))
+        results.append({'sequence_id': seq['id'], 'lead_id': seq['lead_id'], 'result': result})
+    db.commit()
+    db.close()
+    return jsonify({'executed': len(results), 'results': results})
 
 
 # ===================== CALLS API =====================
