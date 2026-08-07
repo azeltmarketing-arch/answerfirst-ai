@@ -331,6 +331,132 @@
         .log-skip { color: #f59e0b; }
         .log-error { color: #ef4444; }
         .log-info { color: #38bdf8; }
+        
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            letter-spacing: -0.5px;
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .modal-close {
+            background: rgba(51, 65, 85, 0.3);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            color: #94a3b8;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+        
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+        }
+        
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        
+        .modal-section-title {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .modal-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+        }
+        
+        .modal-field-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .modal-field-value {
+            font-size: 0.85rem;
+            color: #f1f5f9;
+            font-weight: 600;
+            text-align: right;
+            word-break: break-word;
+            max-width: 60%;
+        }
+        
+        .modal-field-value a {
+            color: #38bdf8;
+            text-decoration: none;
+        }
+        
+        .modal-field-value a:hover {
+            text-decoration: underline;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(51, 65, 85, 0.4);
+        }
+        
+        .modal-actions .btn {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -417,9 +543,25 @@
         </div>
     </div>
 
+    <!-- Lead Detail Modal -->
+    <div class="modal-overlay" id="lead-modal" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Lead Details</div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="modal-contact-btn" onclick="contactCurrentLead()">📧 Contact</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = 'http://127.0.0.1:5050/api';
         let discovering = false;
+        let currentLead = null;
         
         function addLog(message, type = 'info') {
             const log = document.getElementById('log');
@@ -463,12 +605,13 @@
                 if (resp.ok) {
                     addLog(`Discovery complete! Added ${data.added || 0} new prospects.`, 'success');
                     addLog(`Scraped ${data.total_scraped || 0} businesses total.`, 'info');
+                    addLog(`Skipped AI: ${data.skipped_ai || 0} | Skipped no contact: ${data.skipped_no_contact || 0}`, 'skip');
                     
                     // Show top prospects
                     if (data.prospects && data.prospects.length > 0) {
                         addLog('Top prospects found:', 'info');
                         data.prospects.slice(0, 5).forEach(p => {
-                            addLog(`  • ${p.name} | Fit: ${p.fit_score}/100 | Email: ${p.email || 'none'}`, p.fit_score >= 65 ? 'success' : 'skip');
+                            addLog(`  • ${p.name} | Fit: ${p.fit_score}/100 | Email: ${p.email || 'none'} | Phone: ${p.phone || 'none'}`, p.fit_score >= 65 ? 'success' : 'skip');
                         });
                     }
                     
@@ -510,11 +653,11 @@
             }
             
             tbody.innerHTML = leads.map(lead => `
-                <tr onclick="editLead(${lead.id})">
+                <tr onclick="showLeadDetail(${lead.id})">
                     <td><strong>${escapeHtml(lead.name || 'Unknown')}</strong></td>
                     <td><a href="${escapeHtml(lead.website || '#')}" target="_blank" style="color: #38bdf8; text-decoration: none;">${extractDomain(lead.website)}</a></td>
                     <td>${lead.email ? `<a href="mailto:${escapeHtml(lead.email)}" style="color: #38bdf8; text-decoration: none;">${escapeHtml(lead.email)}</a>` : '<span style="color: #64748b;">—</span>'}</td>
-                    <td>${lead.phone || '<span style="color: #64748b;">—</span>'}</td>
+                    <td>${lead.phone ? `<a href="tel:${escapeHtml(lead.phone)}" style="color: #38bdf8; text-decoration: none;">${escapeHtml(lead.phone)}</a>` : '<span style="color: #64748b;">—</span>'}</td>
                     <td><span class="badge badge-gray">${escapeHtml(lead.niche || '—')}</span></td>
                     <td><span class="badge ${getFitBadgeClass(lead.fit_score)}">${lead.fit_score || 0}/100</span></td>
                     <td>${lead.pain_score || 0}</td>
@@ -522,6 +665,79 @@
                     <td><button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="event.stopPropagation(); contactLead('${escapeHtml(lead.name || '')}')">Contact</button></td>
                 </tr>
             `).join('');
+        }
+        
+        async function showLeadDetail(leadId) {
+            try {
+                const resp = await fetch(`${API_BASE}/leads/${leadId}`);
+                const lead = await resp.json();
+                currentLead = lead;
+                
+                document.getElementById('modal-title').textContent = lead.name || 'Lead Details';
+                document.getElementById('modal-body').innerHTML = `
+                    <div class="modal-section">
+                        <div class="modal-section-title">Contact Information</div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Email</span>
+                            <span class="modal-field-value">${lead.email ? `<a href="mailto:${escapeHtml(lead.email)}">${escapeHtml(lead.email)}</a>` : '—'}</span>
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Phone</span>
+                            <span class="modal-field-value">${lead.phone ? `<a href="tel:${escapeHtml(lead.phone)}">${escapeHtml(lead.phone)}</a>` : '—'}</span>
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Website</span>
+                            <span class="modal-field-value"><a href="${escapeHtml(lead.website || '#')}" target="_blank">${extractDomain(lead.website)}</a></span>
+                        </div>
+                    </div>
+                    <div class="modal-section">
+                        <div class="modal-section-title">Qualification</div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Niche</span>
+                            <span class="modal-field-value"><span class="badge badge-gray">${escapeHtml(lead.niche || '—')}</span></span>
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Fit Score</span>
+                            <span class="modal-field-value"><span class="badge ${getFitBadgeClass(lead.fit_score)}">${lead.fit_score || 0}/100</span></span>
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Pain Score</span>
+                            <span class="modal-field-value">${lead.pain_score || 0}</span>
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">AI Detected</span>
+                            <span class="modal-field-value"><span class="badge ${lead.has_ai ? 'badge-red' : 'badge-green'}">${lead.has_ai ? 'Yes' : 'No'}</span></span>
+                        </div>
+                    </div>
+                    <div class="modal-section">
+                        <div class="modal-section-title">Status & Notes</div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Status</span>
+                            <span class="modal-field-value"><span class="badge ${getStatusBadgeClass(lead.status)}">${lead.status || 'new'}</span></span>
+                        </div>
+                        <div class="modal-field">
+                            <span class="modal-field-label">Notes</span>
+                            <span class="modal-field-value">${lead.notes ? escapeHtml(lead.notes) : '—'}</span>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('lead-modal').classList.add('active');
+            } catch (e) {
+                alert('Failed to load lead details');
+            }
+        }
+        
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('lead-modal').classList.remove('active');
+            currentLead = null;
+        }
+        
+        function contactCurrentLead() {
+            if (currentLead) {
+                contactLead(currentLead.name);
+            }
         }
         
         function updateStats(leads) {
@@ -574,37 +790,12 @@
             alert(`Opening outreach for: ${name}\n\nIn production, this would open your email client with a pre-written outreach message.`);
         }
         
-        function editLead(id) {
-            const newStatus = prompt('Update status (new/contacted/responded/converted/disqualified):');
-            if (!newStatus) return;
-            
-            fetch(`${API_BASE}/leads`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, status: newStatus })
-            }).then(() => {
-                refreshLeads();
-            });
-        }
-        
-        async function exportCsv() {
-            try {
-                const resp = await fetch(`${API_BASE}/export/leads`);
-                if (resp.ok) {
-                    const blob = await resp.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `prospects_${new Date().toISOString().slice(0,10)}.csv`;
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                } else {
-                    alert('Export failed');
-                }
-            } catch (e) {
-                alert('Export failed: ' + e.message);
+        // Keyboard shortcut to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
             }
-        }
+        });
         
         // Initial load
         refreshLeads();
