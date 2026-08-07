@@ -5,6 +5,7 @@
     { "src": "public-site/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/portal/api/(.*)", "dest": "/api/index.py" }
+    { "src": "/portal/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/(.*)", "dest": "/public-site/$1" }
   ]
 }
