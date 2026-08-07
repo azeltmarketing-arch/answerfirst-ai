@@ -60,6 +60,27 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
       <li>SMS automation</li>
       <li>Priority support</li>
     </ul>
+    <ul class="features" id="order-features-seo" style="display:none;">
+      <li>Technical SEO audit &amp; fixes</li>
+      <li>10 core service pages optimized</li>
+      <li>Google Business Profile setup</li>
+      <li>Basic citation building</li>
+      <li>Monthly ranking report</li>
+    </ul>
+    <ul class="features" id="order-features-seo-growth" style="display:none;">
+      <li>Everything in Starter</li>
+      <li>20 pages + blog content</li>
+      <li>Advanced local SEO</li>
+      <li>Review generation system</li>
+      <li>Competitor tracking</li>
+    </ul>
+    <ul class="features" id="order-features-seo-enterprise" style="display:none;">
+      <li>Everything in Growth</li>
+      <li>Unlimited pages &amp; content</li>
+      <li>Full link building</li>
+      <li>Dedicated SEO strategist</li>
+      <li>Custom integrations</li>
+    </ul>
     <a id="order-paypal" href="https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4" class="btn btn-primary" target="_blank" rel="noopener">Pay with PayPal</a>
     <p class="note">After payment, you'll be redirected to the order confirmation page. We'll reach out within 24 hours to begin onboarding.</p>
   </div>
@@ -80,15 +101,40 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
   const paypal = document.getElementById('order-paypal');
   if(title && pkg) title.textContent = 'Complete Your Order — ' + pkg;
   if(price){
-    const map = {Starter:'$1,500',Growth:'$2,500',Enterprise:'$4,000',Basic:'$1,500',Premium:'$2,500'};
+    const map = {Starter:'$1,500',Growth:'$2,500',Enterprise:'$4,000',Basic:'$1,500',Premium:'$2,500','SEO Starter':'$497','SEO Growth':'$997','SEO Enterprise':'$1,497'};
     price.innerHTML = (map[pkg] || '$2,500') + '<span style="font-size:1rem;font-weight:400;color:var(--text-muted);">/mo</span>';
   }
   if(desc && pkg){
-    const map = {Starter:'For new contractors',Growth:'Most popular plan',Enterprise:'For established teams',Basic:'For new contractors',Premium:'Most popular plan'};
+    const map = {Starter:'For new contractors',Growth:'Most popular plan',Enterprise:'For established teams',Basic:'For new contractors',Premium:'Most popular plan','SEO Starter':'Technical SEO, GBP setup, basic citations','SEO Growth':'20 pages, advanced local SEO, reviews','SEO Enterprise':'Unlimited pages, full link building, strategist'};
     desc.textContent = map[pkg] || '';
   }
   if(paypal && pkg){
-    paypal.href = 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4?package=' + encodeURIComponent(pkg);
+    const paypalMap = {
+      Starter: 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4',
+      Growth: 'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
+      Enterprise: 'https://www.paypal.com/ncp/payment/TZYZ5AEAWFG2E',
+      Basic: 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4',
+      Premium: 'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
+      'SEO Starter': 'https://www.paypal.com/ncp/payment/35S4U5YGYX424',
+      'SEO Growth': 'https://www.paypal.com/ncp/payment/FAE996TPULJU2',
+      'SEO Enterprise': 'https://www.paypal.com/ncp/payment/QYN7PUJTUBSYA'
+    };
+    paypal.href = paypalMap[pkg] || 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4';
+  }
+  // Show correct features for SEO packages
+  const baseFeatures = document.getElementById('order-features');
+  const seoFeatures = document.getElementById('order-features-seo');
+  const seoGrowthFeatures = document.getElementById('order-features-seo-growth');
+  const seoEnterpriseFeatures = document.getElementById('order-features-seo-enterprise');
+  if(pkg === 'SEO Starter' && baseFeatures && seoFeatures){
+    baseFeatures.style.display = 'none';
+    seoFeatures.style.display = 'block';
+  } else if(pkg === 'SEO Growth' && baseFeatures && seoGrowthFeatures){
+    baseFeatures.style.display = 'none';
+    seoGrowthFeatures.style.display = 'block';
+  } else if(pkg === 'SEO Enterprise' && baseFeatures && seoEnterpriseFeatures){
+    baseFeatures.style.display = 'none';
+    seoEnterpriseFeatures.style.display = 'block';
   }
 })();
 </script>
