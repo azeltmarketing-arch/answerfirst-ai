@@ -5,10 +5,11 @@ Port: 5070
 
 from flask import Flask, render_template_string, request, jsonify, redirect, url_for, make_response, send_from_directory
 from flask_cors import CORS
-JWT_SECRET = os.environ.get('JWT_SECRET', secrets.token_hex(32))
 import sqlite3, os, secrets, hashlib, smtplib, ssl
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
+
+JWT_SECRET = os.environ.get('JWT_SECRET', secrets.token_hex(32))
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["https://answerfirst-ai.vercel.app", "https://*.vercel.app"])
