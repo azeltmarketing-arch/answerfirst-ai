@@ -451,9 +451,13 @@ def route_lead(lead: dict):
 
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.row_factory = sqlite3.Row
-    # Ensure tables exist
+    try:
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('PRAGMA busy_timeout=30000')
+    except Exception:
+        pass
     try:
         c = conn.cursor()
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='clients'")
