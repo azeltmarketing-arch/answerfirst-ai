@@ -101,11 +101,11 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
   const paypal = document.getElementById('order-paypal');
   if(title && pkg) title.textContent = 'Complete Your Order — ' + pkg;
   if(price){
-    const map = {Starter:'$1,500',Growth:'$2,500',Enterprise:'$4,000',Basic:'$1,500',Premium:'$2,500','SEO Starter':'$497','SEO Growth':'$997','SEO Enterprise':'$1,497'};
+    const map = {Starter:'$1,500',Growth:'$2,500',Enterprise:'$4,000',Basic:'$1,500',Premium:'$2,500','SEO Starter':'$497','SEO Growth':'$997','SEO Authority':'$1,497'};
     price.innerHTML = (map[pkg] || '$2,500') + '<span style="font-size:1rem;font-weight:400;color:var(--text-muted);">/mo</span>';
   }
   if(desc && pkg){
-    const map = {Starter:'For new contractors',Growth:'Most popular plan',Enterprise:'For established teams',Basic:'For new contractors',Premium:'Most popular plan','SEO Starter':'Technical SEO, GBP setup, basic citations','SEO Growth':'20 pages, advanced local SEO, reviews','SEO Enterprise':'Unlimited pages, full link building, strategist'};
+    const map = {Starter:'For new contractors',Growth:'Most popular plan',Enterprise:'For established teams',Basic:'For new contractors',Premium:'Most popular plan','SEO Starter':'Technical SEO, GBP setup, basic citations','SEO Growth':'20 pages, advanced local SEO, reviews','SEO Authority':'Unlimited pages, full link building, strategist'};
     desc.textContent = map[pkg] || '';
   }
   if(paypal && pkg){
@@ -117,7 +117,7 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
       Premium: 'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
       'SEO Starter': 'https://www.paypal.com/ncp/payment/35S4U5YGYX424',
       'SEO Growth': 'https://www.paypal.com/ncp/payment/FAE996TPULJU2',
-      'SEO Enterprise': 'https://www.paypal.com/ncp/payment/QYN7PUJTUBSYA'
+      'SEO Authority': 'https://www.paypal.com/ncp/payment/QYN7PUJTUBSYA'
     };
     paypal.href = paypalMap[pkg] || 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4';
   }
@@ -132,7 +132,7 @@ toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')=
   } else if(pkg === 'SEO Growth' && baseFeatures && seoGrowthFeatures){
     baseFeatures.style.display = 'none';
     seoGrowthFeatures.style.display = 'block';
-  } else if(pkg === 'SEO Enterprise' && baseFeatures && seoEnterpriseFeatures){
+  } else if((pkg === 'SEO Authority' || pkg === 'SEO Enterprise') && baseFeatures && seoEnterpriseFeatures){
     baseFeatures.style.display = 'none';
     seoEnterpriseFeatures.style.display = 'block';
   }
