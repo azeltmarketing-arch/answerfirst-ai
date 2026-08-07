@@ -31,7 +31,6 @@ AI_INDICATORS = [
     "ai receptionist", "smart assistant", "ai chat", "automated assistant"
 ]
 
-# Domains that are always aggregators/directories, never a direct business landing page
 AGGREGATOR_DOMAINS = {
     'yelp.com', 'tripadvisor.com', 'tiktok.com', 'youtube.com', 'facebook.com',
     'twitter.com', 'x.com', 'linkedin.com', 'instagram.com', 'google.com',
@@ -68,29 +67,20 @@ DIRECTORY_SIGNATURES = [
 
 
 def is_aggregator(url: str, title: str = '', body: str = '') -> bool:
-    """Check if a URL is an aggregator/directory site."""
     from urllib.parse import urlparse
     parsed = urlparse(url)
     domain = parsed.netloc.lower().replace('www.', '')
-    
-    # Direct domain blocklist
     if domain in AGGREGATOR_DOMAINS:
         return True
-    
-    # Block specific aggregator paths
     path = parsed.path.lower()
     if any(x in path for x in ['/search', '/find', '/directory', '/listing', '/guide', '/near']):
         return True
-    
-    # Block by title/body patterns
     title_lower = title.lower()
     body_lower = body.lower()
     combined = title_lower + ' ' + body_lower
-    
     for sig in DIRECTORY_SIGNATURES:
         if sig in combined:
             return True
-    
     return False
 
 
@@ -118,7 +108,6 @@ def init_db():
 
 
 def search_businesses(niche: str, location: str = "", num_results: int = 20):
-    """Search DuckDuckGo for actual local businesses, not directories."""
     results = []
     queries = [
         f"{niche} {location} phone number contact",
@@ -134,25 +123,17 @@ def search_businesses(niche: str, location: str = "", num_results: int = 20):
                     url = hit.get('href', '')
                     title = hit.get('title', '')
                     body = hit.get('body', '')
-                    
-                    # Filter out aggregators/directories
                     if not url.startswith('http'):
                         continue
                     if is_aggregator(url, title, body):
                         continue
                     if any(x in url for x in ['youtube.com', 'facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com']):
                         continue
-                    
-                    results.append({
-                        'title': title,
-                        'url': url,
-                        'body': body
-                    })
-                time.sleep(1.5)  # Be polite
+                    results.append({'title': title, 'url': url, 'body': body})
+                time.sleep(1.5)
             except Exception as e:
                 print(f"Search error: {e}")
     
-    # Deduplicate by domain
     seen = set()
     unique = []
     for r in results:
@@ -163,26 +144,117 @@ def search_businesses(niche: str, location: str = "", num_results: int = 20):
     return unique
 
 
-def extract_contact_info_from_html(html: str):
-    """Extract email and phone from raw HTML."""
+def decode_obfuscated_email(text: str) -> str:
+    """Decode common obfuscation patterns like info [at] domain [dot] com."""
+    # Pattern: word [at] domain [dot] com
+    m = re.search(r'([\w\.-]+)\s*[\(\[\{]\s*at\s*[\)\]\}]\s*([\w\.-]+)\s*[\(\[\{]\s*dot\s*[\)\]\}]\s*([\w\.-]+)', text, re.IGNORECASE)
+    if m:
+        return f"{m.group(1)}@{m.group(2)}.{m.group(3)}"
+    
+    # Pattern: word(at)domain(dot)com
+    m = re.search(r'([\w\.-]+)\s*\(\s*at\s*\)\s*([\w\.-]+)\s*\(\s*dot\s*\)\s*([\w\.-]+)', text, re.IGNORECASE)
+    if m:
+        return f"{m.group(1)}@{m.group(2)}.{m.group(3)}"
+    
+    # Pattern: word AT domain DOT com
+    m = re.search(r'([\w\.-]+)\s+AT\s+([\w\.-]+)\s+DOT\s+([\w\.-]+)', text, re.IGNORECASE)
+    if m:
+        return f"{m.group(1)}@{m.group(2)}.{m.group(3)}"
+    
+    return ''
+
+
+def extract_emails_aggressive(html: str, soup=None) -> list:
+    """Aggressively extract emails from HTML using every method."""
     emails = []
-    phones = []
     
-    # Extract from visible text
-    text_emails = re.findall(r'[\w\.-]+@[\w\.-]+\.\w{2,}', html)
-    emails.extend(text_emails)
+    # 1. Direct regex on raw HTML
+    direct = re.findall(r'[\w\.-]+@[\w\.-]+\.\w{2,}', html)
+    emails.extend(direct)
     
-    # Extract from mailto links
+    # 2. Mailto links
     mailtos = re.findall(r'href="mailto:([^"]+)"', html)
     for mailto in mailtos:
         email = mailto.split('?')[0].strip()
         if email and re.match(r'[\w\.-]+@[\w\.-]+\.\w{2,}', email):
             emails.append(email)
     
-    # Extract phone from raw HTML
+    # 3. JSON-LD / schema.org
+    schemas = re.findall(r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', html, re.DOTALL | re.IGNORECASE)
+    for schema in schemas:
+        try:
+            import json
+            data = json.loads(schema)
+            email = _extract_email_from_json(data)
+            if email:
+                emails.append(email)
+        except:
+            pass
+    
+    # 4. Obfuscated emails
+    obfuscated = decode_obfuscated_email(html)
+    if obfuscated:
+        emails.append(obfuscated)
+    
+    # 5. Common patterns from text content
+    if soup:
+        text = soup.get_text(separator=' ', strip=True)
+        # Look for "email us at ..." patterns
+        m = re.search(r'email\s+us\s+at\s+([\w\.-]+@[\w\.-]+\.\w{2,})', text, re.IGNORECASE)
+        if m:
+            emails.append(m.group(1))
+        
+        # Look for "contact ...@..." patterns
+        m = re.search(r'contact[:\s]+([\w\.-]+@[\w\.-]+\.\w{2,})', text, re.IGNORECASE)
+        if m:
+            emails.append(m.group(1))
+    
+    # Deduplicate
+    emails = list(dict.fromkeys(emails))
+    
+    # Filter out bad emails
+    bad_emails = {'info@example.com', 'test@test.com', 'email@example.com', 
+                  'your@email.com', 'name@domain.com', 'user@domain.com',
+                  'example@example.com', 'domain@domain.com', 'sentry.io',
+                  'wixpress.com', 'sentry-next.wixpress.com', 'googleapis.com',
+                  'schema.org', 'example.com', 'w3.org', 'creativecommons.org'}
+    emails = [e for e in emails if e.lower() not in bad_emails and not e.endswith('.png') and not e.endswith('.jpg')]
+    
+    return emails
+
+
+def _extract_email_from_json(data):
+    """Recursively extract email from JSON-LD data."""
+    if isinstance(data, dict):
+        for key in ['email', 'contactPoint', 'contact']:
+            if key in data:
+                val = data[key]
+                if isinstance(val, str) and re.match(r'[\w\.-]+@[\w\.-]+\.\w{2,}', val):
+                    return val
+                if isinstance(val, dict):
+                    email = val.get('email', '')
+                    if email and re.match(r'[\w\.-]+@[\w\.-]+\.\w{2,}', str(email)):
+                        return str(email)
+        for val in data.values():
+            result = _extract_email_from_json(val)
+            if result:
+                return result
+    elif isinstance(data, list):
+        for item in data:
+            result = _extract_email_from_json(item)
+            if result:
+                return result
+    return ''
+
+
+def extract_phones_aggressive(html: str, soup=None) -> list:
+    """Aggressively extract phone numbers from HTML."""
+    phones = []
+    
+    # 1. Direct regex on raw HTML
     phone_patterns = [
         r'\(?\d{3}\)?[\s\.\-]\d{3}[\s\.\-]\d{4}',
-        r'\+?1?[\s\-\.]\(?\d{3}\)?[\s\-\.]\d{3}[\s\-\.]\d{4}',
+        r'\+?1?[\s\-\.]\(?\d{3}\)?[\s\-\.]\d{3}[\s\-\-]\d{4}',
         r'\d{3}[\s\.\-]\d{3}[\s\.\-]\d{4}',
         r'\(\d{3}\)\s*\d{3}[-\.]\d{4}',
         r'href="tel:([^"]+)"',
@@ -192,88 +264,57 @@ def extract_contact_info_from_html(html: str):
         found = re.findall(pattern, html)
         phones.extend(found)
     
-    # Deduplicate
-    emails = list(dict.fromkeys(emails))
-    phones = list(dict.fromkeys(phones))
-    
-    # Filter out common non-business emails
-    bad_emails = {'info@example.com', 'test@test.com', 'email@example.com', 
-                  'your@email.com', 'name@domain.com', 'user@domain.com',
-                  'example@example.com', 'domain@domain.com'}
-    emails = [e for e in emails if e.lower() not in bad_emails and not e.endswith('.png') and not e.endswith('.jpg')]
-    
-    # Filter out obviously bad phone numbers
-    bad_phones = {'000-000-0000', '123-456-7890', '555-555-5555', '000-000-000',
-                  '111-111-1111', '222-222-2222', '333-333-3333'}
-    phones = [p for p in phones if p not in bad_phones]
-    
-    return emails[0] if emails else '', phones[0] if phones else ''
-
-
-def extract_contact_info(soup, text: str):
-    """Extract email and phone from page text."""
-    emails = []
-    phones = []
-    
-    # Extract from visible text
-    text_emails = re.findall(r'[\w\.-]+@[\w\.-]+\.\w{2,}', text)
-    emails.extend(text_emails)
-    
-    # Extract from mailto links
-    for a in soup.find_all('a', href=True):
-        href = a['href']
-        if href.startswith('mailto:'):
-            email = href.replace('mailto:', '').split('?')[0].strip()
-            if email and re.match(r'[\w\.-]+@[\w\.-]+\.\w{2,}', email):
-                emails.append(email)
-    
-    # Extract phone from text
-    phone_patterns = [
-        r'\(?\d{3}\)?[\s\.\-]\d{3}[\s\.\-]\d{4}',
-        r'\+?1?[\s\-\.]\(?\d{3}\)?[\s\-\.]\d{3}[\s\-\.]\d{4}',
-        r'\d{3}[\s\.\-]\d{3}[\s\.\-]\d{4}',
-        r'\(\d{3}\)\s*\d{3}[-\.]\d{4}',
-    ]
-    
-    for pattern in phone_patterns:
-        found = re.findall(pattern, text)
-        phones.extend(found)
+    # 2. From text content
+    if soup:
+        text = soup.get_text(separator=' ', strip=True)
+        for pattern in phone_patterns:
+            found = re.findall(pattern, text)
+            phones.extend(found)
     
     # Deduplicate
-    emails = list(dict.fromkeys(emails))
     phones = list(dict.fromkeys(phones))
     
-    # Filter out common non-business emails
-    bad_emails = {'info@example.com', 'test@test.com', 'email@example.com', 
-                  'your@email.com', 'name@domain.com', 'user@domain.com',
-                  'example@example.com', 'domain@domain.com'}
-    emails = [e for e in emails if e.lower() not in bad_emails and not e.endswith('.png') and not e.endswith('.jpg')]
-    
-    # Filter out obviously bad phone numbers
+    # Filter bad numbers
     bad_phones = {'000-000-0000', '123-456-7890', '555-555-5555', '000-000-000',
-                  '111-111-1111', '222-222-2222', '333-333-3333'}
-    phones = [p for p in phones if p not in bad_phones]
+                  '111-111-1111', '222-222-2222', '333-333-3333', '888-888-8888',
+                  '999-999-9999', '000-0000000'}
+    phones = [p for p in phones if p not in bad_phones and len(p) >= 10]
     
-    return emails[0] if emails else '', phones[0] if phones else ''
+    return phones
 
 
-def find_contact_page(base_url: str) -> str:
-    """Try to find a contact page on the same domain."""
+def normalize_phone(phone: str) -> str:
+    """Normalize phone to (555) 123-4567 format."""
+    digits = re.sub(r'[^\d]', '', phone)
+    if len(digits) == 11 and digits[0] == '1':
+        digits = digits[1:]
+    if len(digits) != 10:
+        return phone
+    return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+
+
+def find_contact_pages(base_url: str) -> list:
+    """Find potential contact pages."""
     from urllib.parse import urljoin, urlparse
     parsed = urlparse(base_url)
     base = f"{parsed.scheme}://{parsed.netloc}"
     
-    contact_paths = ['/contact', '/contact-us', '/reach-us', '/get-in-touch', '/about', '/about-us']
+    paths = [
+        '/contact', '/contact-us', '/reach-us', '/get-in-touch',
+        '/about', '/about-us', '/staff', '/team', '/locations',
+        '/phone', '/email', '/connect'
+    ]
     
-    for path in contact_paths:
+    found = []
+    for path in paths:
         try:
             test_url = urljoin(base, path)
             resp = requests.get(test_url, headers={'User-Agent': USER_AGENT}, timeout=10, allow_redirects=True)
             if resp.status_code == 200:
-                return resp.url
+                found.append(resp.url)
         except:
             continue
-    return base_url
+    return found
 
 
 def scrape_website(url: str, deep_scrape: bool = True) -> dict:
@@ -287,16 +328,11 @@ def scrape_website(url: str, deep_scrape: bool = True) -> dict:
                 'email': '', 'phone': '', 'final_url': url
             }
         
-        # Track final URL after redirects
         final_url = resp.url
         raw_html = resp.text
-        
-        # Extract from raw HTML directly (BeautifulSoup get_text can lose formatting)
-        email, phone = extract_contact_info_from_html(raw_html)
-        
         soup = BeautifulSoup(raw_html, 'html.parser')
         
-        # Get all text for AI/pain analysis
+        # Get text for AI/pain analysis
         for script in soup(["script", "style", "nav", "footer", "header"]):
             script.decompose()
         text = soup.get_text(separator=' ', strip=True).lower()
@@ -307,27 +343,39 @@ def scrape_website(url: str, deep_scrape: bool = True) -> dict:
         # Count pain indicators
         pain_score = sum(1 for indicator in PAIN_INDICATORS if indicator in text)
         
-        # Deep scrape: try contact page if no contact info found
+        # Extract contact info - try main page first
+        emails = extract_emails_aggressive(raw_html, soup)
+        phones = extract_phones_aggressive(raw_html, soup)
+        
+        email = emails[0] if emails else ''
+        phone = normalize_phone(phones[0]) if phones else ''
+        
+        # Deep scrape: try contact pages if no contact info found
         if deep_scrape and (not email or not phone):
-            contact_url = find_contact_page(final_url)
-            if contact_url != final_url:
+            contact_urls = find_contact_pages(final_url)
+            for contact_url in contact_urls[:2]:  # Try top 2 contact pages
                 try:
                     contact_resp = requests.get(contact_url, headers={'User-Agent': USER_AGENT}, timeout=15)
                     if contact_resp.status_code == 200:
-                        contact_email, contact_phone = extract_contact_info_from_html(contact_resp.text)
-                        if not email and contact_email:
-                            email = contact_email
-                        if not phone and contact_phone:
-                            phone = contact_phone
+                        contact_soup = BeautifulSoup(contact_resp.text, 'html.parser')
+                        contact_emails = extract_emails_aggressive(contact_resp.text, contact_soup)
+                        contact_phones = extract_phones_aggressive(contact_resp.text, contact_soup)
+                        
+                        if not email and contact_emails:
+                            email = contact_emails[0]
+                        if not phone and contact_phones:
+                            phone = normalize_phone(contact_phones[0])
                         
                         # Add pain score from contact page
-                        contact_soup = BeautifulSoup(contact_resp.text, 'html.parser')
                         for script in contact_soup(["script", "style"]):
                             script.decompose()
                         contact_text = contact_soup.get_text(separator=' ', strip=True).lower()
                         pain_score += sum(1 for indicator in PAIN_INDICATORS if indicator in contact_text)
+                        
+                        if email and phone:
+                            break
                 except:
-                    pass
+                    continue
         
         return {
             'content': text[:500],
@@ -345,15 +393,12 @@ def scrape_website(url: str, deep_scrape: bool = True) -> dict:
 
 
 def calculate_fit_score(has_ai: int, pain_score: int, has_email: bool, has_phone: bool) -> int:
-    """Calculate fit score (0-100)."""
     if has_ai:
         return 0
-    
-    score = 40  # Base score
-    score += min(pain_score * 5, 25)  # Pain points add up to 25
-    score += 15 if has_email else 0  # Email contact
-    score += 20 if has_phone else 0  # Phone contact (more valuable)
-    
+    score = 40
+    score += min(pain_score * 5, 25)
+    score += 15 if has_email else 0
+    score += 20 if has_phone else 0
     return min(score, 100)
 
 
@@ -375,11 +420,8 @@ def discover_leads():
     num_results = data.get('num_results', 10)
     
     init_db()
-    
-    # Search with improved queries - get more to filter down
     businesses = search_businesses(niche, location, num_results * 3)
     
-    # Scrape and qualify
     prospects = []
     skipped_ai = 0
     skipped_no_contact = 0
@@ -387,12 +429,10 @@ def discover_leads():
     for biz in businesses:
         scraped = scrape_website(biz['url'], deep_scrape=True)
         
-        # Skip if has AI
         if scraped['has_ai']:
             skipped_ai += 1
             continue
         
-        # REQUIRE at least one contact method (email OR phone)
         has_email = bool(scraped['email'])
         has_phone = bool(scraped['phone'])
         
@@ -401,8 +441,6 @@ def discover_leads():
             continue
         
         fit = calculate_fit_score(scraped['has_ai'], scraped['pain_score'], has_email, has_phone)
-        
-        # Use final URL after redirects for direct landing page
         final_url = scraped.get('final_url', biz['url'])
         
         prospect_data = {
@@ -417,9 +455,8 @@ def discover_leads():
             'notes': scraped['content'][:200]
         }
         prospects.append(prospect_data)
-        time.sleep(random.uniform(0.8, 2.0))  # Be polite
+        time.sleep(random.uniform(0.8, 2.0))
     
-    # Save to DB
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     saved = 0
