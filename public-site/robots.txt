@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /portal/
+Sitemap: https://public-site-nu-seven.vercel.app/sitemap.xml
