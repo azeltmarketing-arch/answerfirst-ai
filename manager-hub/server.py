@@ -622,6 +622,51 @@ def shutdown():
     return jsonify({'status': 'shutting down'})
 
 
+@app.route('/api/dashboard')
+def dashboard():
+    return jsonify({})
+
+
+@app.route('/api/contacts')
+def contacts():
+    return jsonify([])
+
+
+@app.route('/api/activities')
+def activities():
+    return jsonify([])
+
+
+@app.route('/api/deals')
+def deals():
+    return jsonify([])
+
+
+@app.route('/api/orders')
+def orders():
+    return jsonify([])
+
+
+@app.route('/api/orders/<int:order_id>', methods=['PATCH'])
+def update_order(order_id):
+    return jsonify({'updated': True})
+
+
+@app.route('/api/send-email', methods=['POST'])
+def send_email():
+    return jsonify({'smtp': {'status': 'queued'}})
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    return jsonify({'token': 'local', 'user': {'email': 'local@manager'}})
+
+
+@app.route('/api/auth/me')
+def auth_me():
+    return jsonify({'email': 'local@manager'})
+
+
 if __name__ == '__main__':
     init_db()
     print("🚀 Manager Hub running at http://127.0.0.1:5050")

@@ -1015,12 +1015,12 @@
                             <thead>
                                 <tr>
                                     <th>Business</th>
-                                    <th>Contact</th>
-                                    <th>Phone</th>
                                     <th>Email</th>
-                                    <th>Source</th>
+                                    <th>Phone</th>
+                                    <th>Website</th>
+                                    <th>Fit</th>
+                                    <th>Pain</th>
                                     <th>Status</th>
-                                    <th>Last Contact</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -1223,6 +1223,27 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="lead-modal" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="lead-modal-title">Lead Details</h2>
+                <button class="modal-close" onclick="closeLeadModal()">×</button>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">Lead Information</div>
+                <div id="lead-modal-info"></div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">Contact Information</div>
+                <div id="lead-modal-contact"></div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">Notes</div>
+                <div id="lead-modal-notes"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let dashboardData = {
             leads: [],
@@ -1323,7 +1344,32 @@
         function closeModal(event) {
             if (!event || event.target.classList.contains('modal-overlay')) {
                 document.getElementById('deal-modal').classList.remove('active');
+                document.getElementById('lead-modal').classList.remove('active');
             }
+        }
+
+        function closeLeadModal() {
+            document.getElementById('lead-modal').classList.remove('active');
+        }
+
+        function openLeadModal(idx) {
+            const lead = dashboardData.leads[idx];
+            if (!lead) return;
+            document.getElementById('lead-modal-title').textContent = lead.business_name || 'Lead Details';
+            document.getElementById('lead-modal-info').innerHTML = `
+                <div class="modal-row"><span class="modal-label">Business</span><span class="modal-value">${lead.business_name || 'N/A'}</span></div>
+                <div class="modal-row"><span class="modal-label">Niche</span><span class="modal-value">${lead.niche || 'N/A'}</span></div>
+                <div class="modal-row"><span class="modal-label">Fit Score</span><span class="modal-value">${lead.score || 0}/100</span></div>
+                <div class="modal-row"><span class="modal-label">Pain Score</span><span class="modal-value">${lead.pain_score || 0}</span></div>
+                <div class="modal-row"><span class="modal-label">Status</span><span class="modal-value">${lead.status || 'new'}</span></div>
+            `;
+            document.getElementById('lead-modal-contact').innerHTML = `
+                <div class="modal-row"><span class="modal-label">Email</span><span class="modal-value">${lead.email ? `<a href="mailto:${lead.email}">${lead.email}</a>` : 'N/A'}</span></div>
+                <div class="modal-row"><span class="modal-label">Phone</span><span class="modal-value">${lead.phone ? `<a href="tel:${lead.phone}">${lead.phone}</a>` : 'N/A'}</span></div>
+                <div class="modal-row"><span class="modal-label">Website</span><span class="modal-value">${lead.website ? `<a href="${lead.website}" target="_blank" rel="noopener">${lead.website}</a>` : 'N/A'}</span></div>
+            `;
+            document.getElementById('lead-modal-notes').innerHTML = `<p style="color:#94a3b8;font-size:0.9rem;">${lead.notes || 'No notes'}</p>`;
+            document.getElementById('lead-modal').classList.add('active');
         }
 
         async function loadAllData() {
@@ -1387,16 +1433,20 @@
 
         async function loadLeads() {
             try {
-                const response = await fetch('http://127.0.0.1:5050/api/contacts');
+                const response = await fetch('http://127.0.0.1:5050/api/leads');
                 if (!response.ok) throw new Error('CRM offline');
                 const data = await response.json();
                 dashboardData.leads = (data || []).map(c => ({
-                    business_name: c.company || '',
-                    owner: [c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unknown',
+                    business_name: c.name || '',
+                    owner: 'Unknown',
                     phone: c.phone || '',
                     email: c.email || '',
-                    status: c.status || 'active',
-                    score: 0,
+                    website: c.website || '',
+                    status: c.status || 'new',
+                    score: c.fit_score || 0,
+                    pain_score: c.pain_score || 0,
+                    niche: c.niche || '',
+                    notes: c.notes || '',
                 }));
             } catch (e) {
                 dashboardData.leads = [];
@@ -1869,24 +1919,20 @@
             const tbody = document.getElementById('leads-tbody');
             if (!tbody) return;
             tbody.innerHTML = dashboardData.leads.map((lead, idx) => {
-                const sent = lead._email_sent ? 'Sent' : 'Not Contacted';
-                const badgeClass = lead._email_sent ? 'badge-green' : 'badge-yellow';
-                const actionHtml = lead._email_sent
-                    ? `<button class="btn-primary" onclick="sendFollowUp(${idx})">Follow Up</button>`
-                    : `<button class="btn-primary" onclick="sendIntroEmail(${idx})">Send Email</button>`;
+                const actionHtml = `<button class="btn-primary" onclick="openLeadModal(${idx})">View</button>`;
                 return `
-                    <tr>
+                    <tr onclick="openLeadModal(${idx})" style="cursor:pointer">
                         <td><strong>${lead.business_name || 'N/A'}</strong></td>
-                        <td>${lead.owner || 'N/A'}</td>
-                        <td>${lead.phone || 'N/A'}</td>
-                        <td>${lead.email || 'N/A'}</td>
-                        <td><span class="badge badge-blue">${lead.source || 'Web'}</span></td>
-                        <td><span class="badge ${lead.status === 'contacted' ? 'badge-green' : lead.status === 'responded' ? 'badge-green' : 'badge-gray'}">${lead.status || 'new'}</span></td>
-                        <td>${lead.last_contact || '--'}</td>
+                        <td>${lead.email || '--'}</td>
+                        <td>${lead.phone || '--'}</td>
+                        <td>${lead.website ? `<a href="${lead.website}" target="_blank" rel="noopener">Link</a>` : '--'}</td>
+                        <td><span class="badge ${(lead.score || 0) >= 65 ? 'badge-green' : 'badge-yellow'}">${lead.score || 0}</span></td>
+                        <td>${lead.pain_score || 0}</td>
+                        <td><span class="badge ${lead.status === 'contacted' || lead.status === 'responded' ? 'badge-green' : lead.status === 'closed_won' ? 'badge-green' : 'badge-gray'}">${lead.status || 'new'}</span></td>
                         <td>${actionHtml}</td>
                     </tr>
                 `;
-            }).join('');
+            }).join('') || '<tr><td colspan="8" style="color:#475569;">No leads yet. Click Auto Discover Leads.</td></tr>';
         }
 
         async function sendIntroEmail(index) {
