@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contractor Case Studies — AnswerFirst AI</title>
+<meta name="description" content="Real results from HVAC and roofing contractors using AnswerFirst AI for appointment setting and SEO.">
+<link rel="canonical" href="https://answerfirst-ai.vercel.app/case-studies/index.html">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Contractor Case Studies — AnswerFirst AI">
+<meta property="og:description" content="Real results from HVAC and roofing contractors using AnswerFirst AI.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://answerfirst-ai.vercel.app/case-studies/index.html">
+<meta property="og:image" content="https://answerfirst-ai.vercel.app/og-cover.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --bg-alt: #f8fafc; --bg-card: #ffffff;
+  --text: #0f172a; --text-muted: #475569; --border: #e2e8f0;
+  --primary: #0f172a; --primary-light: #1e293b;
+  --accent: #3b82f6; --accent-glow: rgba(59,130,246,0.25);
+  --success: #10b981; --success-glow: rgba(16,185,129,0.25);
+  --shadow: 0 4px 20px rgba(0,0,0,0.06); --shadow-lg: 0 20px 60px rgba(0,0,0,0.08);
+  --radius: 16px; --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-theme="dark"] {
+  --bg: #0a0a0a; --bg-alt: #0f0f0a; --bg-card: #171717;
+  --text: #ffffff; --text-muted: #a3a3a3; --border: #262626;
+  --primary: #ffffff; --primary-light: #e5e5e5;
+  --accent: #60a5fa; --accent-glow: rgba(96,165,250,0.3);
+  --success: #34d399; --success-glow: rgba(52,211,153,0.3);
+  --shadow: 0 4px 20px rgba(0,0,0,0.4); --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.6; overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
+}
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: 18px 5%; display: flex; justify-content: space-between; align-items: center;
+  backdrop-filter: blur(20px); background: rgba(255,255,255,0.7);
+  border-bottom: 1px solid var(--border); transition: all var(--transition);
+}
+[data-theme="dark"] .nav { background: rgba(10,10,10,0.75); }
+.nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.25rem; color: var(--text); text-decoration: none; }
+.nav-logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--success));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 900; font-size: 1.1rem;
+}
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-link {
+  color: var(--text-muted); text-decoration: none; font-weight: 500;
+  font-size: 0.95rem; transition: color var(--transition); position: relative;
+}
+.nav-link:hover { color: var(--text); }
+.nav-link::after {
+  content: ''; position: absolute; bottom: -6px; left: 0;
+  width: 0; height: 2px; background: var(--accent); transition: width var(--transition);
+}
+.nav-link:hover::after { width: 100%; }
+.nav-cta {
+  padding: 10px 24px; background: var(--primary); color: #fff;
+  border-radius: 100px; text-decoration: none; font-weight: 600;
+  font-size: 0.95rem; transition: all var(--transition);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+.nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+[data-theme="dark"] .nav-cta { box-shadow: 0 4px 14px rgba(255,255,255,0.1); }
+[data-theme="dark"] .nav-cta:hover { box-shadow: 0 8px 25px rgba(255,255,255,0.2); }
+.theme-toggle {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; transition: all var(--transition);
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.mobile-menu-btn {
+  display: none; background: none; border: none; font-size: 1.5rem;
+  color: var(--text); cursor: pointer;
+}
+
+.section {
+  padding: 100px 5%; max-width: 1300px; margin: 0 auto;
+}
+.section-header {
+  text-align: center; max-width: 700px; margin: 0 auto 64px;
+}
+.section-label {
+  display: inline-block; padding: 6px 14px;
+  background: var(--accent-glow); color: var(--accent);
+  border-radius: 100px; font-size: 0.85rem; font-weight: 600;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800; line-height: 1.15; letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.section-subtitle {
+  font-size: 1.1rem; color: var(--text-muted); line-height: 1.7;
+}
+
+.studies-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 28px;
+}
+.study-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 36px;
+  transition: all var(--transition); position: relative; overflow: hidden;
+}
+.study-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+.study-badge {
+  display: inline-block; padding: 6px 14px; background: var(--success-glow);
+  color: var(--success); border-radius: 100px; font-size: 0.8rem; font-weight: 700;
+  margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.study-title {
+  font-size: 1.35rem; font-weight: 800; margin-bottom: 8px; line-height: 1.25;
+}
+.study-subtitle {
+  font-size: 0.95rem; color: var(--text-muted); margin-bottom: 18px; font-weight: 600;
+}
+.study-metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  margin: 20px 0; padding: 18px; background: var(--bg-alt);
+  border-radius: 12px; border: 1px solid var(--border);
+}
+.study-metric-value {
+  font-size: 1.5rem; font-weight: 900; color: var(--success);
+  line-height: 1;
+}
+.study-metric-label {
+  font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.study-body {
+  font-size: 0.95rem; color: var(--text-muted); line-height: 1.7;
+}
+
+.cta-section {
+  padding: 100px 5%;
+  background: linear-gradient(135deg, var(--bg-alt), var(--bg));
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.cta-inner {
+  max-width: 900px; margin: 0 auto; text-align: center;
+}
+.cta-title {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800; line-height: 1.15; letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.cta-subtitle {
+  font-size: 1.1rem; color: var(--text-muted); line-height: 1.7;
+  margin-bottom: 32px;
+}
+.cta-group { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  padding: 14px 32px; border-radius: 100px; font-weight: 600;
+  font-size: 1rem; text-decoration: none; display: inline-flex;
+  align-items: center; gap: 8px; transition: all var(--transition);
+  border: none; cursor: pointer; font-family: inherit;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #2563eb);
+  color: #fff; box-shadow: 0 8px 30px var(--accent-glow);
+}
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px var(--accent-glow); }
+.btn-outline {
+  background: transparent; color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.footer {
+  padding: 60px 5% 30px; max-width: 1300px; margin: 0 auto;
+  border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px;
+}
+.footer-brand { font-weight: 800; font-size: 1.2rem; margin-bottom: 10px; }
+.footer-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+.footer-links { list-style: none; }
+.footer-links li { margin-bottom: 10px; }
+.footer-links a {
+  color: var(--text-muted); text-decoration: none; font-size: 0.95rem;
+  transition: color var(--transition);
+}
+.footer-links a:hover { color: var(--accent); }
+.footer-bottom {
+  max-width: 1300px; margin: 0 auto; padding: 24px 5%; text-align: center;
+  font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .mobile-menu-btn { display: block; }
+  .section { padding: 70px 5%; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="https://answerfirst-ai.vercel.app" class="nav-logo">
+    <div class="nav-logo-icon">A</div>
+    <span>AnswerFirst AI</span>
+  </a>
+  <div class="nav-links">
+    <a href="https://answerfirst-ai.vercel.app" class="nav-link">Home</a>
+    <a href="https://answerfirst-ai.vercel.app/seo-services.html" class="nav-link">SEO</a>
+    <a href="https://answerfirst-ai.vercel.app/case-studies/index.html" class="nav-link">Case Studies</a>
+    <a href="https://answerfirst-ai.vercel.app/#contact" class="nav-link">Contact</a>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <a href="/portal-login.html" class="nav-cta">Client Portal</a>
+  </div>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+</nav>
+
+<section class="section">
+  <div class="section-header">
+    <div class="section-label">Case Studies</div>
+    <h1 class="section-title">Real Contractor Results</h1>
+    <p class="section-subtitle">
+      Proof, not promises. These are actual outcomes from HVAC and roofing contractors who implemented our AI appointment system.
+    </p>
+  </div>
+  <div class="studies-grid">
+    <div class="study-card">
+      <div class="study-badge">HVAC — California</div>
+      <div class="study-title">12 Leads to 48 Leads in 30 Days</div>
+      <div class="study-subtitle">3-person HVAC crew in the Inland Empire</div>
+      <div class="study-metrics">
+        <div>
+          <div class="study-metric-value">4x</div>
+          <div class="study-metric-label">More Leads</div>
+        </div>
+        <div>
+          <div class="study-metric-value">32%</div>
+          <div class="study-metric-label">More Revenue</div>
+        </div>
+        <div>
+          <div class="study-metric-value">0</div>
+          <div class="study-metric-label">Missed Calls</div>
+        </div>
+      </div>
+      <div class="study-body">
+        Before AnswerFirst AI, this crew was missing roughly 40% of incoming calls because they were on jobs. Our AI now answers every call, qualifies the lead, and books the appointment directly into their calendar.
+      </div>
+    </div>
+    <div class="study-card">
+      <div class="study-badge">Roofing — Texas</div>
+      <div class="study-title">$28K in New Business in 60 Days</div>
+      <div class="study-subtitle">Roofing company in Austin metro</div>
+      <div class="study-metrics">
+        <div>
+          <div class="study-metric-value">$28K</div>
+          <div class="study-metric-label">New Revenue</div>
+        </div>
+        <div>
+          <div class="study-metric-value">18</div>
+          <div class="study-metric-label">Booked Jobs</div>
+        </div>
+        <div>
+          <div class="study-metric-value">62%</div>
+          <div class="study-metric-label">Close Rate</div>
+        </div>
+      </div>
+      <div class="study-body">
+        After a storm surge, this roofing company couldn't keep up with the volume. AnswerFirst AI handled all inbound calls, qualified homeowners, and scheduled inspections — even after hours.
+      </div>
+    </div>
+    <div class="study-card">
+      <div class="study-badge">HVAC — Florida</div>
+      <div class="study-title">Saved 14 Hours/Week on Dispatch</div>
+      <div class="study-subtitle">Multi-truck HVAC operation in Tampa</div>
+      <div class="study-metrics">
+        <div>
+          <div class="study-metric-value">14h</div>
+          <div class="study-metric-label">Saved Weekly</div>
+        </div>
+        <div>
+          <div class="study-metric-value">3.2x</div>
+          <div class="study-metric-label">More Calls</div>
+        </div>
+        <div>
+          <div class="study-metric-value">91%</div>
+          <div class="study-metric-label">CSAT</div>
+        </div>
+      </div>
+      <div class="study-body">
+        The dispatcher was spending 20+ hours a week answering basic questions and scheduling. Our AI took over 90% of inbound calls, freeing the dispatcher to focus on technician routing and emergencies.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="section-label" style="display:inline-block;padding:6px 14px;background:var(--accent-glow);color:var(--accent);border-radius:100px;font-size:0.85rem;font-weight:600;margin-bottom:16px;">Get Started</div>
+    <h2 class="cta-title">Ready for Results Like These?</h2>
+    <p class="cta-subtitle">
+      Get a free consultation and custom plan for your business. No obligations, no pressure.
+    </p>
+    <div class="cta-group">
+      <a href="https://answerfirst-ai.vercel.app/#contact" class="btn btn-primary">Request Free Consultation</a>
+      <a href="https://answerfirst-ai.vercel.app/seo-services.html" class="btn btn-outline">View SEO Services</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div>
+    <div class="footer-brand">AnswerFirst AI</div>
+    <p class="footer-text">AI appointment setting and search engine optimization for HVAC and roofing contractors.</p>
+  </div>
+  <div>
+    <ul class="footer-links">
+      <li><a href="https://answerfirst-ai.vercel.app/">Home</a></li>
+      <li><a href="https://answerfirst-ai.vercel.app/seo-services.html">SEO</a></li>
+      <li><a href="https://answerfirst-ai.vercel.app/case-studies/index.html">Case Studies</a></li>
+      <li><a href="https://answerfirst-ai.vercel.app/#contact">Contact</a></li>
+    </ul>
+  </div>
+  <div>
+    <ul class="footer-links">
+      <li><a href="mailto:azelt.marketing@gmail.com">azelt.marketing@gmail.com</a></li>
+      <li><a href="tel:5622593384">562-259-3384</a></li>
+      <li><a href="/portal-login.html">Client Portal</a></li>
+    </ul>
+  </div>
+</footer>
+<div class="footer-bottom">© 2026 AnswerFirst AI. All rights reserved. Serving contractors nationwide.</div>
+
+<script>
+  const toggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+  const saved = localStorage.getItem('theme');
+  if (saved) html.setAttribute('data-theme', saved);
+  else if (window.matchMedia('(prefers-color-scheme: dark)').matches) html.setAttribute('data-theme', 'dark');
+  toggle.textContent = html.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  toggle.addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    toggle.textContent = next === 'dark' ? '☀️' : '🌙';
+  });
+
+  const mobileBtn = document.getElementById('mobileMenuBtn');
+  const navLinks = document.querySelector('.nav-links');
+  if (mobileBtn && navLinks) {
+    mobileBtn.addEventListener('click', () => {
+      const open = navLinks.classList.toggle('nav-open');
+      mobileBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+  if (!document.querySelector('#nav-mobile-css')) {
+    const style = document.createElement('style');
+    style.id = 'nav-mobile-css';
+    style.textContent = '.nav-links.nav-open{display:flex!important;position:absolute;top:72px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);padding:16px 5%;flex-direction:column;gap:16px;}';
+    document.head.appendChild(style);
+  }
+</script>
+</body>
+</html>
