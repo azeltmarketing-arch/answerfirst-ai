@@ -176,6 +176,11 @@ document.getElementById('forgot-link').addEventListener('click',e=>{
 
 </script>
 
+<script>
+if(document.cookie.includes('portal_token')){
+  document.cookie = 'portal_token=; Max-Age=0; path=/';
+}
+</script>
 </body>
 
 </html>

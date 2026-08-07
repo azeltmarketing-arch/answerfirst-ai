@@ -50,7 +50,8 @@ tr:last-child td{border-bottom:none;}
     <a href="/portal/documents" class="nav-link">Documents</a>
     <a href="/portal/account" class="nav-link">Account</a>
     <button class="theme-toggle" id="themeToggle">🌙</button>
-    <a href="/portal/login" class="nav-link">Logout</a>
+    <a href="#" class="nav-link" onclick="document.cookie='portal_token=; Max-Age=0; path=/;
+location.href='/portal/login';">Logout</a>
   </div>
 </nav>
 <div class="main">
