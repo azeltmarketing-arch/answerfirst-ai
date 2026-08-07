@@ -5,6 +5,7 @@ Port: 5070
 
 from flask import Flask, render_template_string, request, jsonify, redirect, url_for, make_response, send_from_directory
 from flask_cors import CORS
+import jwt
 import sqlite3, os, secrets, hashlib, smtplib, ssl
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
