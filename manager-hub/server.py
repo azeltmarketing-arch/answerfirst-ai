@@ -1082,13 +1082,6 @@ def auth_me():
     return jsonify({'email': 'local@manager'})
 
 
-if __name__ == '__main__':
-    init_db()
-    _start_scheduler()
-    print("🚀 Manager Hub running at http://127.0.0.1:5050")
-    app.run(host='127.0.0.1', port=5050, debug=False)
-
-
 # ===== SMTP / Sending =====
 
 def _get_smtp_settings():
@@ -1161,7 +1154,6 @@ def _process_due_sequences():
         c.execute("SELECT * FROM outreach_emails WHERE sequence_id = ? AND step = ? AND status = 'pending'", (seq['id'], seq['current_step']))
         email = c.fetchone()
         if not email:
-            # No pending email at current step, mark sequence stopped
             c.execute("UPDATE outreach_sequences SET status = 'stopped' WHERE id = ?", (seq['id'],))
             conn.commit()
             continue
@@ -1172,7 +1164,6 @@ def _process_due_sequences():
             conn.commit()
             continue
 
-        # Send email
         result = send_email_smtp(seq['lead_email'], email['subject'], email['body'], seq['niche'])
 
         next_step = seq['current_step'] + 1
@@ -1340,3 +1331,10 @@ def outreach_personalize():
         personalization['personalization_score'] = 2
 
     return jsonify(personalization)
+
+
+if __name__ == '__main__':
+    init_db()
+    print("🚀 Manager Hub running at http://127.0.0.1:5050")
+    _start_scheduler()
+    app.run(host='127.0.0.1', port=5050, debug=False)
