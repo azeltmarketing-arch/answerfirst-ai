@@ -120,6 +120,52 @@ def init_db():
             c.execute("ALTER TABLE prospects ADD COLUMN session_id TEXT")
         except Exception:
             pass
+    
+    # Outreach tables
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS outreach_sequences (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lead_id INTEGER,
+            niche TEXT,
+            status TEXT DEFAULT 'active',
+            current_step INTEGER DEFAULT 0,
+            last_sent_at TEXT,
+            next_send_at TEXT,
+            FOREIGN KEY (lead_id) REFERENCES prospects(id)
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS outreach_emails (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sequence_id INTEGER,
+            step INTEGER,
+            subject TEXT,
+            body TEXT,
+            sent_at TEXT,
+            opened INTEGER DEFAULT 0,
+            replied INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'pending',
+            FOREIGN KEY (sequence_id) REFERENCES outreach_sequences(id)
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS outreach_replies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email_id INTEGER,
+            reply_text TEXT,
+            reply_classification TEXT,
+            received_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (email_id) REFERENCES outreach_emails(id)
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS suppression_list (
+            email TEXT PRIMARY KEY,
+            reason TEXT,
+            added_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
     conn.commit()
     conn.close()
 
@@ -826,6 +872,191 @@ def update_order(order_id):
 @app.route('/api/send-email', methods=['POST'])
 def send_email():
     return jsonify({'smtp': {'status': 'queued'}})
+
+
+@app.route('/api/outreach/start', methods=['POST'])
+def outreach_start():
+    data = request.json or {}
+    lead_id = data.get('lead_id')
+    email_address = data.get('email')
+    niche = data.get('niche', 'hvac')
+    
+    if not lead_id or not email_address:
+        return jsonify({'error': 'lead_id and email required'}), 400
+    
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # Check suppression list
+    c.execute("SELECT email FROM suppression_list WHERE email = ?", (email_address,))
+    if c.fetchone():
+        conn.close()
+        return jsonify({'error': 'suppressed'}), 400
+    
+    # Check if sequence already exists
+    c.execute("SELECT id FROM outreach_sequences WHERE lead_id = ? AND status = 'active'", (lead_id,))
+    existing = c.fetchone()
+    if existing:
+        conn.close()
+        return jsonify({'sequence_id': existing['id'], 'status': 'already_started'})
+    
+    # Create sequence
+    c.execute(
+        "INSERT INTO outreach_sequences (lead_id, niche, status, current_step, last_sent_at, next_send_at) VALUES (?, ?, 'active', 0, ?, ?)",
+        (lead_id, niche, datetime.now().isoformat(), datetime.now().isoformat())
+    )
+    sequence_id = c.lastrowid
+    
+    # Generate all 5 emails
+    from outreach import get_sequence_for_niche
+    emails = get_sequence_for_niche(niche)
+    for idx, email_tmpl in enumerate(emails):
+        c.execute(
+            "INSERT INTO outreach_emails (sequence_id, step, subject, body, status) VALUES (?, ?, ?, ?, 'pending')",
+            (sequence_id, idx, email_tmpl['subject'], email_tmpl['body'])
+        )
+    
+    conn.commit()
+    conn.close()
+    return jsonify({'sequence_id': sequence_id, 'status': 'started', 'emails': len(emails)})
+
+
+@app.route('/api/outreach/sequences')
+def outreach_sequences():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("""
+        SELECT os.*, p.name as lead_name, p.email as lead_email, p.niche as lead_niche
+        FROM outreach_sequences os
+        LEFT JOIN prospects p ON p.id = os.lead_id
+        ORDER BY os.created_at DESC
+    """)
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@app.route('/api/outreach/sequences/<int:lead_id>')
+def outreach_sequence_for_lead(lead_id):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM outreach_sequences WHERE lead_id = ? AND status = 'active'", (lead_id,))
+    seq = c.fetchone()
+    if not seq:
+        conn.close()
+        return jsonify({'error': 'not found'}), 404
+    
+    c.execute("SELECT * FROM outreach_emails WHERE sequence_id = ? ORDER BY step", (seq['id'],))
+    emails = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify({'sequence': dict(seq), 'emails': emails})
+
+
+@app.route('/api/outreach/emails/<int:sequence_id>/send', methods=['POST'])
+def outreach_send_next(sequence_id):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # Get sequence
+    c.execute("SELECT * FROM outreach_sequences WHERE id = ?", (sequence_id,))
+    seq = c.fetchone()
+    if not seq:
+        conn.close()
+        return jsonify({'error': 'sequence not found'}), 404
+    
+    current_step = seq['current_step']
+    
+    # Get next pending email
+    c.execute("SELECT * FROM outreach_emails WHERE sequence_id = ? AND step = ? AND status = 'pending'", (sequence_id, current_step))
+    email = c.fetchone()
+    if not email:
+        conn.close()
+        return jsonify({'error': 'no pending emails'}), 400
+    
+    # Mark as sent
+    now = datetime.now().isoformat()
+    c.execute("UPDATE outreach_emails SET status = 'sent', sent_at = ? WHERE id = ?", (now, email['id']))
+    c.execute("UPDATE outreach_sequences SET current_step = current_step + 1, last_sent_at = ? WHERE id = ?", (now, sequence_id))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        'email_id': email['id'],
+        'step': email['step'],
+        'subject': email['subject'],
+        'body': email['body'],
+        'status': 'sent'
+    })
+
+
+@app.route('/api/outreach/replies', methods=['POST'])
+def outreach_record_reply():
+    data = request.json or {}
+    email_id = data.get('email_id')
+    reply_text = data.get('reply_text', '')
+    reply_classification = data.get('reply_classification', 'unknown')
+    
+    if not email_id:
+        return jsonify({'error': 'email_id required'}), 400
+    
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO outreach_replies (email_id, reply_text, reply_classification) VALUES (?, ?, ?)",
+        (email_id, reply_text, reply_classification)
+    )
+    
+    # Mark email as replied
+    c.execute("UPDATE outreach_emails SET replied = 1 WHERE id = ?", (email_id))
+    
+    # Stop sequence
+    c.execute("SELECT sequence_id FROM outreach_emails WHERE id = ?", (email_id,))
+    row = c.fetchone()
+    if row:
+        c.execute("UPDATE outreach_sequences SET status = 'stopped' WHERE id = ?", (row[0],))
+    
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'recorded'})
+
+
+@app.route('/api/outreach/suppress', methods=['POST'])
+def outreach_suppress():
+    data = request.json or {}
+    email = data.get('email')
+    reason = data.get('reason', 'manual')
+    
+    if not email:
+        return jsonify({'error': 'email required'}), 400
+    
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT OR IGNORE INTO suppression_list (email, reason) VALUES (?, ?)", (email, reason))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'suppressed'})
+
+
+@app.route('/api/outreach/generate', methods=['POST'])
+def outreach_generate_preview():
+    data = request.json or {}
+    niche = data.get('niche', 'hvac')
+    template_index = data.get('template_index', 0)
+    variables = data.get('variables', {})
+    
+    from outreach import generate_email
+    result = generate_email(niche, template_index, variables)
+    return jsonify(result)
 
 
 @app.route('/api/auth/login', methods=['POST'])

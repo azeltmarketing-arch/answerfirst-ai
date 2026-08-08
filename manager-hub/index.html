@@ -614,6 +614,7 @@
             <div id="modal-body"></div>
             <div class="modal-actions">
                 <button class="btn btn-primary" id="modal-contact-btn" onclick="contactCurrentLead()">📧 Contact</button>
+                <button class="btn btn-secondary" id="modal-outreach-btn" onclick="startOutreach()">📧 Start Outreach</button>
                 <button class="btn btn-secondary" onclick="closeModal()">Close</button>
             </div>
         </div>
@@ -838,6 +839,32 @@
         function contactCurrentLead() {
             if (currentLead) {
                 contactLead(currentLead.name);
+            }
+        }
+        
+        async function startOutreach() {
+            if (!currentLead || !currentLead.id) return;
+            
+            try {
+                const resp = await fetch(`${API_BASE}/outreach/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        lead_id: currentLead.id,
+                        email: currentLead.email,
+                        niche: currentLead.niche || 'hvac'
+                    })
+                });
+                const data = await resp.json();
+                
+                if (resp.ok) {
+                    alert(`Outreach sequence started! ${data.emails} emails queued. Sequence ID: ${data.sequence_id}`);
+                    closeModal();
+                } else {
+                    alert(data.error || 'Failed to start outreach');
+                }
+            } catch (e) {
+                alert('Error starting outreach: ' + e.message);
             }
         }
         
