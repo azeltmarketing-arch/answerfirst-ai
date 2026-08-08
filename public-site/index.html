@@ -1122,12 +1122,13 @@ body {
   });
 
   // ===== CONTACT FORM WITH TOAST =====
-  const contactForm = document.getElementById('contact-form');
-  const contactMsg = document.getElementById('contact-msg');
-  const contactBtn = contactForm ? contactForm.querySelector('button[type="submit"]') : null;
+  window.contactForm = document.getElementById('contact-form');
+  window.contactMsg = document.getElementById('contact-msg');
+  window.contactBtn = window.contactForm ? window.contactForm.querySelector('button[type="submit"]') : null;
   window.handleContactSubmit = function(e) {
     e.preventDefault();
-    if (!contactForm) return;
+    const form = window.contactForm;
+    if (!form) return;
     const data = {
       name: document.getElementById('contact-name').value,
       email: document.getElementById('contact-email').value,
@@ -1135,10 +1136,10 @@ body {
       company: document.getElementById('contact-company').value,
       volume: document.getElementById('contact-volume').value,
     };
-    const originalBtnText = contactBtn ? contactBtn.textContent : '';
-    if (contactBtn) {
-      contactBtn.disabled = true;
-      contactBtn.textContent = 'Sending...';
+    const originalBtnText = window.contactBtn ? window.contactBtn.textContent : '';
+    if (window.contactBtn) {
+      window.contactBtn.disabled = true;
+      window.contactBtn.textContent = 'Sending...';
     }
     fetch('https://answerfirst-ai-backend.onrender.com/portal/api/order-intent', {
       method: 'POST',
@@ -1147,14 +1148,14 @@ body {
     }).then(r => r.json()).then(res => {
       if (res.status === 'intent_created') {
         showToast('✓ Account creation link sent! Check your email to continue.', 'success');
-        contactForm.reset();
+        form.reset();
       } else {
         showToast(res.error || 'Something went wrong. Please try again or call 562-259-3384.', 'error');
       }
     }).catch(() => showToast('Connection error. Please try again.', 'error')).finally(() => {
-      if (contactBtn) {
-        contactBtn.disabled = false;
-        contactBtn.textContent = originalBtnText;
+      if (window.contactBtn) {
+        window.contactBtn.disabled = false;
+        window.contactBtn.textContent = originalBtnText;
       }
     });
   };

@@ -572,6 +572,35 @@
                     </table>
                 </div>
             </div>
+            <!-- Sales Orders Table -->
+            <div class="card" id="sales-card" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div class="card-title" style="margin-bottom: 0;">💰 Sales Orders</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" onclick="refreshOrders()" style="padding: 8px 16px; font-size: 0.85rem;">🔄 Refresh Orders</button>
+                        <button class="btn-secondary" onclick="cancelExpiredOrders()" style="padding: 8px 16px; font-size: 0.85rem;">⏰ Cancel Expired (42h)</button>
+                    </div>
+                </div>
+                <div id="sales-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;"></div>
+                <div style="overflow-x: auto;">
+                    <table id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Business Name</th>
+                                <th>Package</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Stage</th>
+                                <th>Payment Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                            <tr><td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">Loading orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -861,6 +890,86 @@
         function contactLead(name) {
             alert(`Opening outreach for: ${name}\n\nIn production, this would open your email client with a pre-written outreach message.`);
         }
+
+        // ===== SALES ORDERS =====
+        async function refreshOrders() {
+            try {
+                const res = await fetch('/api/orders');
+                const orders = await res.json();
+                renderOrders(orders);
+            } catch (e) {
+                console.error('Failed to load orders:', e);
+            }
+        }
+
+        function renderOrders(orders) {
+            const tbody = document.getElementById('orders-tbody');
+            const summary = document.getElementById('sales-summary');
+            if (!tbody) return;
+            
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">No orders yet. Orders will appear here when clients submit the contact form.</td></tr>';
+                if (summary) summary.innerHTML = '';
+                return;
+            }
+
+            // Summary cards
+            if (summary) {
+                const totalRevenue = orders.reduce((sum, o) => sum + (parseInt(o.amount.replace(/[^0-9]/g, '')) || 0), 0);
+                const pending = orders.filter(o => o.payment_status === 'Order Created').length;
+                const processing = orders.filter(o => o.payment_status === 'Payment Processing').length;
+                const complete = orders.filter(o => o.payment_status === 'Payment Complete').length;
+                summary.innerHTML = `
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                        <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total Revenue</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">$${totalRevenue.toLocaleString()}</div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                        <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Pending</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">${pending}</div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                        <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Processing</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #38bdf8;">${processing}</div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                        <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Complete</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${complete}</div>
+                    </div>
+                `;
+            }
+
+            // Table rows
+            tbody.innerHTML = orders.map(o => {
+                let badgeClass = 'badge-gray';
+                const ps = o.payment_status || '';
+                if (ps === 'Order Created') badgeClass = 'badge-yellow';
+                else if (ps === 'Payment Processing') badgeClass = 'badge-blue';
+                else if (ps === 'Payment Complete') badgeClass = 'badge-green';
+                else if (ps === 'Cancelled') badgeClass = 'badge-red';
+                
+                return `<tr>
+                    <td style="font-weight: 600; color: #94a3b8;">#${o.id}</td>
+                    <td style="font-weight: 600;">${escapeHtml(o.business_name)}</td>
+                    <td>${escapeHtml(o.package)}</td>
+                    <td style="font-weight: 700; color: #10b981;">${o.amount}</td>
+                    <td style="color: #94a3b8;">${o.date}</td>
+                    <td>${escapeHtml(o.stage)}</td>
+                    <td><span class="badge ${badgeClass}">${o.payment_status}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function cancelExpiredOrders() {
+            try {
+                const res = await fetch('/api/admin/cancel-expired', { method: 'POST' });
+                const data = await res.json();
+                alert(`Auto-cancelled ${data.cancelled} expired order(s).`);
+                refreshOrders();
+            } catch (e) {
+                alert('Failed to cancel expired orders.');
+            }
+        }
         
         // Keyboard shortcut to close modal
         document.addEventListener('keydown', (e) => {
@@ -871,9 +980,13 @@
         
         // Initial load
         refreshLeads();
+        refreshOrders();
         
-        // Refresh every 30 seconds
+        // Refresh leads every 30 seconds
         setInterval(refreshLeads, 30000);
+        
+        // Refresh orders every 30 seconds
+        setInterval(refreshOrders, 30000);
     </script>
 </body>
 </html>

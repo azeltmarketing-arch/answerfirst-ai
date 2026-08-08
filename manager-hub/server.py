@@ -9,7 +9,7 @@ import csv
 import time
 import random
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from ddgs import DDGS
 import re
@@ -749,7 +749,65 @@ def deals():
 
 @app.route('/api/orders')
 def orders():
-    return jsonify([])
+    # Auto-cancel expired orders on every check
+    _auto_cancel_expired()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('''
+        SELECT o.id, o.package, o.amount, o.status, o.payment_method, o.created_at,
+               c.business_name, c.contact_name, c.email, c.phone
+        FROM orders o
+        LEFT JOIN clients c ON o.client_id = c.id
+        ORDER BY o.id DESC
+    ''')
+    rows = c.fetchall()
+    conn.close()
+    result = []
+    for row in rows:
+        biz = row['business_name'] or row['contact_name'] or 'Unknown'
+        stage = 'ACC Created' if not row['package'] or row['package'] == 'TBD' else row['package']
+        amount = row['amount'] or 0
+        pay_status = row['status']
+        if pay_status == 'order_created':
+            pay_status_display = 'Order Created'
+        elif pay_status == 'awaiting_payment':
+            pay_status_display = 'Payment Processing'
+        elif pay_status == 'payment_complete':
+            pay_status_display = 'Payment Complete'
+        elif pay_status == 'cancelled':
+            pay_status_display = 'Cancelled'
+        else:
+            pay_status_display = pay_status.replace('_', ' ').title()
+        result.append({
+            'id': row['id'],
+            'business_name': biz,
+            'package': stage,
+            'amount': f'${amount:,.0f}' if amount else '$0',
+            'date': row['created_at'][:10] if row['created_at'] else '',
+            'stage': stage,
+            'payment_status': pay_status_display,
+            'email': row['email'],
+            'phone': row['phone']
+        })
+    return jsonify(result)
+
+
+def _auto_cancel_expired():
+    try:
+        cutoff = (datetime.now() - timedelta(hours=42)).isoformat()
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute('SELECT id FROM orders WHERE status = ? AND created_at < ?', ('order_created', cutoff))
+        expired = c.fetchall()
+        for row in expired:
+            c.execute('UPDATE orders SET status = ? WHERE id = ?', ('cancelled', row[0]))
+        conn.commit()
+        conn.close()
+        if expired:
+            print(f"[auto-cancel] Cancelled {len(expired)} expired order(s)")
+    except Exception as e:
+        print(f"[auto-cancel] Error: {e}")
 
 
 @app.route('/api/orders/<int:order_id>', methods=['PATCH'])
