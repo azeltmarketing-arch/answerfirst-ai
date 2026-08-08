@@ -439,9 +439,7 @@ def discover_leads():
         has_email = bool(scraped['email'])
         has_phone = bool(scraped['phone'])
         
-        if not has_email and not has_phone:
-            skipped_no_contact += 1
-            continue
+        # Save all leads regardless of contact info; contact status is shown in UI
         
         fit = calculate_fit_score(scraped['has_ai'], scraped['pain_score'], has_email, has_phone)
         final_url = scraped.get('final_url', biz['url'])
