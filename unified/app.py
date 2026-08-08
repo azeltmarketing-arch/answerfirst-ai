@@ -1629,9 +1629,10 @@ Best regards,
 The AnswerFirst AI Team
 azelt.marketing@gmail.com"""
 
-    _send_email(email, subject, body)
+    email_result = _send_email(email, subject, body)
+    print(f"[EMAIL] order-intent -> {email_result}")
 
-    return jsonify({'status': 'intent_created', 'order_id': order_id, 'account_url': account_url}), 201
+    return jsonify({'status': 'intent_created', 'order_id': order_id, 'account_url': account_url, 'email_status': email_result.get('status'), 'email_error': email_result.get('error')}), 201
 
 
 @app.route('/portal/api/order-intent/<token>')
