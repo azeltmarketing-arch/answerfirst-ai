@@ -457,6 +457,30 @@
         .modal-actions .btn {
             flex: 1;
         }
+
+        /* Tabs */
+        .tab-group {
+            display: flex;
+            gap: 8px;
+        }
+        .tab {
+            background: rgba(51, 65, 85, 0.3);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            color: #94a3b8;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab.active {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+            color: #38bdf8;
+        }
+        .tab:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -521,7 +545,14 @@
 
             <!-- Leads Table -->
             <div class="card">
-                <div class="card-title">Discovered Prospects</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div class="card-title" style="margin-bottom: 0;">Discovered Prospects</div>
+                    <div class="tab-group">
+                        <button class="tab active" id="tab-all" onclick="switchTab('all')">All</button>
+                        <button class="tab" id="tab-new" onclick="switchTab('new')">New Leads</button>
+                        <button class="tab" id="tab-old" onclick="switchTab('old')">Old Leads</button>
+                    </div>
+                </div>
                 <div style="overflow-x: auto;">
                     <table id="leads-table">
                         <thead>
@@ -563,6 +594,7 @@
         const API_BASE = 'http://127.0.0.1:5050/api';
         let discovering = false;
         let currentLead = null;
+        let currentTab = 'all';
         
         function addLog(message, type = 'info') {
             const log = document.getElementById('log');
@@ -662,7 +694,12 @@
         
         async function refreshLeads() {
             try {
-                const resp = await fetch(`${API_BASE}/leads`);
+                const endpoints = {
+                    all: `${API_BASE}/leads`,
+                    new: `${API_BASE}/leads/new`,
+                    old: `${API_BASE}/leads/old`
+                };
+                const resp = await fetch(endpoints[currentTab] || `${API_BASE}/leads`);
                 const leads = await resp.json();
                 renderLeads(leads);
                 updateStats(leads);
@@ -674,7 +711,8 @@
         function renderLeads(leads) {
             const tbody = document.getElementById('leads-tbody');
             if (!leads || leads.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 40px;">No prospects yet. Click "Scout Now" to discover leads.</td></tr>';
+                const label = currentTab === 'new' ? 'No new leads yet.' : currentTab === 'old' ? 'No old leads yet.' : 'No prospects yet. Click "Scout Now" to discover leads.';
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 40px;">${label}</td></tr>`;
                 return;
             }
             
@@ -776,6 +814,13 @@
             document.getElementById('new-leads').textContent = newCount;
             document.getElementById('avg-fit').textContent = avgFit;
             document.getElementById('qualified-count').textContent = qualified;
+        }
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            refreshLeads();
         }
         
         function getFitBadgeClass(score) {

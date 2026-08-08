@@ -9,6 +9,7 @@ import csv
 import time
 import random
 import requests
+from datetime import datetime
 from bs4 import BeautifulSoup
 from ddgs import DDGS
 import re
@@ -100,9 +101,17 @@ def init_db():
             fit_score INTEGER DEFAULT 0,
             status TEXT DEFAULT 'new',
             notes TEXT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            session_id TEXT
         )
     """)
+    c.execute("PRAGMA table_info(prospects)")
+    cols = [r[1] for r in c.fetchall()]
+    if 'session_id' not in cols:
+        try:
+            c.execute("ALTER TABLE prospects ADD COLUMN session_id TEXT")
+        except Exception:
+            pass
     conn.commit()
     conn.close()
 
@@ -418,6 +427,7 @@ def discover_leads():
     niche = data.get('niche', 'restaurant')
     location = data.get('location', 'Pico Rivera CA')
     num_results = data.get('num_results', 10)
+    session_id = data.get('session_id') or datetime.now().isoformat()
     
     init_db()
     businesses = search_businesses(niche, location, num_results * 3)
@@ -453,7 +463,8 @@ def discover_leads():
             'has_ai': scraped['has_ai'],
             'pain_score': scraped['pain_score'],
             'fit_score': fit,
-            'notes': scraped['content'][:200]
+            'notes': scraped['content'][:200],
+            'session_id': session_id
         }
         prospects.append(prospect_data)
         time.sleep(random.uniform(0.8, 2.0))
@@ -464,10 +475,10 @@ def discover_leads():
     for p in prospects:
         try:
             c.execute("""
-                INSERT OR IGNORE INTO prospects (name, website, email, phone, niche, has_ai, pain_score, fit_score, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO prospects (name, website, email, phone, niche, has_ai, pain_score, fit_score, notes, session_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (p['name'], p['website'], p['email'], p['phone'], p['niche'],
-                  p['has_ai'], p['pain_score'], p['fit_score'], p['notes']))
+                  p['has_ai'], p['pain_score'], p['fit_score'], p['notes'], p['session_id']))
             if c.rowcount > 0:
                 saved += 1
         except Exception as e:
@@ -502,6 +513,44 @@ def get_leads():
     rows = [dict(r) for r in c.fetchall()]
     conn.close()
     return jsonify(rows)
+
+@app.route('/api/leads/new')
+def get_new_leads():
+    init_db()
+    latest_session = get_latest_session_id()
+    if not latest_session:
+        return jsonify([])
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM prospects WHERE session_id = ? ORDER BY fit_score DESC", (latest_session,))
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+@app.route('/api/leads/old')
+def get_old_leads():
+    init_db()
+    latest_session = get_latest_session_id()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    if latest_session:
+        c.execute("SELECT * FROM prospects WHERE session_id != ? OR session_id IS NULL ORDER BY fit_score DESC", (latest_session,))
+    else:
+        c.execute("SELECT * FROM prospects ORDER BY fit_score DESC")
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+def get_latest_session_id():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT MAX(session_id) FROM prospects WHERE session_id IS NOT NULL")
+    row = c.fetchone()
+    conn.close()
+    return row[0] if row and row[0] else None
 
 
 @app.route('/api/leads', methods=['POST'])
