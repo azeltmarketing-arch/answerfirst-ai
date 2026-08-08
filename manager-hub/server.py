@@ -178,6 +178,34 @@ def init_db():
             added_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # CRM / pipeline tables
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS deals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lead_id INTEGER,
+            sequence_id INTEGER,
+            title TEXT,
+            amount REAL DEFAULT 0,
+            stage TEXT DEFAULT 'new',
+            probability INTEGER DEFAULT 10,
+            close_date TEXT,
+            source TEXT DEFAULT 'outreach',
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (lead_id) REFERENCES prospects(id),
+            FOREIGN KEY (sequence_id) REFERENCES outreach_sequences(id)
+        )
+    """)
+    c.execute("PRAGMA table_info(deals)")
+    deal_cols = [r[1] for r in c.fetchall()]
+    for col, coltype in [('lead_id','INTEGER'),('sequence_id','INTEGER'),('title','TEXT'),('amount','REAL'),('stage','TEXT'),('probability','INTEGER'),('close_date','TEXT'),('source','TEXT'),('notes','TEXT'),('updated_at','TEXT DEFAULT CURRENT_TIMESTAMP')]:
+        if col not in deal_cols:
+            try:
+                c.execute(f"ALTER TABLE deals ADD COLUMN {col} {coltype}")
+            except Exception:
+                pass
     
     conn.commit()
     conn.close()
@@ -809,11 +837,6 @@ def activities():
     return jsonify([])
 
 
-@app.route('/api/deals')
-def deals():
-    return jsonify([])
-
-
 @app.route('/api/orders')
 def orders():
     # Auto-cancel expired orders on every check
@@ -1331,6 +1354,116 @@ def outreach_personalize():
         personalization['personalization_score'] = 2
 
     return jsonify(personalization)
+
+
+# ===== CRM / Pipeline =====
+
+@app.route('/api/deals', methods=['GET', 'POST'])
+def deals():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    if request.method == 'POST':
+        data = request.json or {}
+        lead_id = data.get('lead_id')
+        sequence_id = data.get('sequence_id')
+        title = data.get('title', 'New Deal')
+        amount = data.get('amount', 0)
+        stage = data.get('stage', 'new')
+        probability = data.get('probability', 10)
+        close_date = data.get('close_date')
+        source = data.get('source', 'outreach')
+        notes = data.get('notes', '')
+
+        c.execute("""
+            INSERT INTO deals (lead_id, sequence_id, title, amount, stage, probability, close_date, source, notes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (lead_id, sequence_id, title, amount, stage, probability, close_date, source, notes, datetime.now().isoformat(), datetime.now().isoformat()))
+        conn.commit()
+        conn.close()
+        return jsonify({'id': c.lastrowid, 'status': 'created'}), 201
+
+    c.execute("""
+        SELECT d.*, p.name as lead_name, p.niche as lead_niche
+        FROM deals d
+        LEFT JOIN prospects p ON p.id = d.lead_id
+        ORDER BY d.created_at DESC
+    """)
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@app.route('/api/deals/<int:deal_id>', methods=['PATCH'])
+def update_deal(deal_id):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    data = request.json or {}
+    allowed = ['title', 'amount', 'stage', 'probability', 'close_date', 'source', 'notes']
+    updates = {k: data[k] for k in allowed if k in data}
+    if 'updated_at' not in updates:
+        updates['updated_at'] = datetime.now().isoformat()
+
+    if updates:
+        set_clause = ', '.join(f"{k} = ?" for k in updates.keys())
+        values = list(updates.values()) + [deal_id]
+        c.execute(f"UPDATE deals SET {set_clause} WHERE id = ?", values)
+        conn.commit()
+    conn.close()
+    return jsonify({'updated': True})
+
+
+@app.route('/api/pipeline')
+def pipeline():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    stages = ['new', 'contacted', 'walkthrough', 'proposal', 'won', 'lost']
+    result = []
+    for stage in stages:
+        c.execute("SELECT COUNT(*) as count, COALESCE(SUM(amount),0) as value FROM deals WHERE stage = ?", (stage,))
+        row = c.fetchone()
+        result.append({
+            'stage': stage,
+            'count': row['count'],
+            'value': row['value']
+        })
+
+    c.execute("SELECT COUNT(*) as total, COALESCE(SUM(amount),0) as value FROM deals")
+    totals = dict(c.fetchone())
+    conn.close()
+    return jsonify({'stages': result, 'totals': totals})
+
+
+@app.route('/api/attribution')
+def attribution():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT 
+            d.source,
+            d.stage,
+            COUNT(*) as deals,
+            COALESCE(SUM(d.amount),0) as revenue,
+            p.niche
+        FROM deals d
+        LEFT JOIN prospects p ON p.id = d.lead_id
+        GROUP BY d.source, d.stage, p.niche
+        ORDER BY revenue DESC
+    """)
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify(rows)
 
 
 if __name__ == '__main__':
