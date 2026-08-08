@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnswerFirst AI — Select Your Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+  :root{
+    --void:#0a0a0f; --bg:#0a0a0f; --bg-card:#111118; --bg-input:#0d0d14;
+    --text:#f8fafc; --text-muted:#9a9a9a; --text-dim:#64748b;
+    --border:rgba(255,255,255,0.08); --border-focus:rgba(128,82,255,0.5);
+    --iris:#8052ff; --iris-glow:rgba(128,82,255,0.25);
+    --saffron:#ffb829; --saffron-glow:rgba(255,184,41,0.2);
+    --radius:16px; --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Geist',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bg-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
+  .bg-orb-1{top:-10%;left:-10%;width:50vw;height:50vw;background:var(--iris);opacity:0.06;}
+  .bg-orb-2{bottom:-10%;right:-10%;width:40vw;height:40vw;background:var(--saffron);opacity:0.04;}
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 5%;
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(10,10,15,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  }
+  .nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem;color:var(--text);text-decoration:none;}
+  .nav-logo-icon{
+    width:32px;height:32px;border-radius:8px;
+    background:linear-gradient(135deg,var(--iris),var(--saffron));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;
+  }
+  .main{position:relative;z-index:1;padding:120px 5% 60px;max-width:1200px;margin:0 auto;}
+  .page-header{text-align:center;margin-bottom:48px;}
+  .page-header h1{font-size:2.5rem;font-weight:700;margin-bottom:12px;letter-spacing:-0.02em;}
+  .page-header p{color:var(--text-muted);font-size:1.05rem;max-width:600px;margin:0 auto;}
+  .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;}
+  .plan-card{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:32px;transition:all var(--transition);position:relative;overflow:hidden;
+  }
+  .plan-card:hover{border-color:rgba(128,82,255,0.3);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+  .plan-card.popular{border-color:rgba(128,82,255,0.4);}
+  .popular-badge{
+    position:absolute;top:16px;right:16px;
+    background:linear-gradient(135deg,var(--iris),#5b21b6);color:#fff;
+    padding:4px 12px;border-radius:100px;font-size:0.75rem;font-weight:600;
+  }
+  .plan-name{font-size:1.25rem;font-weight:700;margin-bottom:4px;}
+  .plan-desc{font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;}
+  .plan-price{font-size:2.5rem;font-weight:700;margin-bottom:4px;letter-spacing:-0.02em;}
+  .plan-period{font-size:0.95rem;color:var(--text-muted);margin-bottom:24px;}
+  .plan-features{list-style:none;margin-bottom:28px;}
+  .plan-features li{padding:8px 0;border-bottom:1px solid var(--border);font-size:0.9rem;color:var(--text-muted);display:flex;align-items:center;gap:10px;}
+  .plan-features li:last-child{border-bottom:none;}
+  .plan-features li::before{content:'✓';color:var(--saffron);font-weight:700;}
+  .btn{
+    width:100%;padding:14px;border-radius:100px;font-weight:600;font-size:0.95rem;
+    border:none;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;
+    display:block;transition:all var(--transition);
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--iris),#5b21b6);color:#fff;
+    box-shadow:0 8px 30px var(--iris-glow);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px var(--iris-glow);}
+  .error-msg{color:#ef4444;font-size:0.9rem;margin-top:8px;display:none;text-align:center;}
+</style>
+</head>
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <nav>
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">A</div><span>AnswerFirst AI</span></a>
+  </nav>
+  <div class="main">
+    <div class="page-header">
+      <h1>Choose your plan</h1>
+      <p>All plans include our 14-day guarantee. No contracts. Cancel anytime.</p>
+    </div>
+    <div class="plans-grid" id="plans-grid"></div>
+    <div class="error-msg" id="error"></div>
+  </div>
+<script>
+const PLANS = [
+  {
+    name:'Starter', price:'$1,500', period:'/mo', desc:'For new contractors',
+    features:['AI phone answering','Up to 200 calls/mo','Basic CRM','Email support'], popular:false
+  },
+  {
+    name:'Growth', price:'$2,500', period:'/mo', desc:'Most popular',
+    features:['AI phone + chatbot','Up to 500 calls/mo','Advanced CRM + analytics','SMS automation','Priority support'], popular:true
+  },
+  {
+    name:'Authority', price:'$4,000', period:'/mo', desc:'For established teams',
+    features:['Unlimited calls','Custom AI training','Full CRM + API access','Dedicated account manager','White-label options'], popular:false
+  }
+];
+
+(function(){
+  const grid = document.getElementById('plans-grid');
+  PLANS.forEach((plan, i) => {
+    const card = document.createElement('div');
+    card.className = 'plan-card' + (plan.popular ? ' popular' : '');
+    card.innerHTML = `
+      ${plan.popular ? '<div class="popular-badge">Most Popular</div>' : ''}
+      <div class="plan-name">${plan.name}</div>
+      <div class="plan-desc">${plan.desc}</div>
+      <div class="plan-price">${plan.price}<span class="plan-period">${plan.period}</span></div>
+      <ul class="plan-features">${plan.features.map(f => `<li>${f}</li>`).join('')}</ul>
+      <button class="btn btn-primary" data-plan="${plan.name}">Select ${plan.name}</button>
+    `;
+    grid.appendChild(card);
+  });
+
+  async function selectPlan(planName){
+    const errorEl = document.getElementById('error');
+    errorEl.style.display='none';
+    try{
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/plan/select',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({plan: planName})
+      });
+      const j = await r.json();
+      if(!r.ok) throw new Error(j.error || 'Failed');
+      window.location.href = '/portal-checkout.html';
+    }catch(err){
+      errorEl.textContent = err.message;
+      errorEl.style.display='block';
+    }
+  }
+
+  grid.addEventListener('click', (e) => {
+    if(e.target.tagName === 'BUTTON'){
+      selectPlan(e.target.dataset.plan);
+    }
+  });
+})();
+</script>
+</body>
+</html>

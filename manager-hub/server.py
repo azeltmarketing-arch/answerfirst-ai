@@ -15,6 +15,15 @@ from ddgs import DDGS
 import re
 from pathlib import Path
 
+from scraper_utils import (
+    extract_all_emails_from_page,
+    get_whois_email,
+    find_sitemaps,
+    crawl_sitemap_for_emails,
+    guess_emails_from_domain,
+    get_random_headers,
+)
+
 app = Flask(__name__)
 CORS(app)
 app.secret_key = "local-manager-hub-secret"
@@ -22,7 +31,6 @@ app.secret_key = "local-manager-hub-secret"
 BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "prospects.db"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-
 AI_INDICATORS = [
     "chatbot", "ai assistant", "artificial intelligence", "virtual assistant",
     "live chat", "automated", "bot", "ai-powered", "machine learning",
@@ -327,9 +335,9 @@ def find_contact_pages(base_url: str) -> list:
 
 
 def scrape_website(url: str, deep_scrape: bool = True) -> dict:
-    """Scrape a website and return contact info, AI detection, and pain score."""
+    """Scrape a website and return contact info, AI detection, and pain score using maximum extraction."""
     try:
-        headers = {'User-Agent': USER_AGENT}
+        headers = get_random_headers()
         resp = requests.get(url, headers=headers, timeout=20, allow_redirects=True)
         if resp.status_code != 200:
             return {
@@ -352,22 +360,47 @@ def scrape_website(url: str, deep_scrape: bool = True) -> dict:
         # Count pain indicators
         pain_score = sum(1 for indicator in PAIN_INDICATORS if indicator in text)
         
-        # Extract contact info - try main page first
-        emails = extract_emails_aggressive(raw_html, soup)
+        # Extract contact info - maximized extraction
+        emails = extract_all_emails_from_page(raw_html, soup, final_url)
         phones = extract_phones_aggressive(raw_html, soup)
         
         email = emails[0] if emails else ''
         phone = normalize_phone(phones[0]) if phones else ''
         
-        # Deep scrape: try contact pages if no contact info found
+        # Secondary: WHOIS registrant email
+        if not email:
+            parsed = urlparse(final_url)
+            domain = parsed.netloc.replace('www.', '')
+            whois_email = get_whois_email(domain)
+            if whois_email:
+                email = whois_email
+        
+        # Tertiary: sitemap crawling for emails
+        if not email and deep_scrape:
+            sitemaps = find_sitemaps(final_url)
+            for sitemap_url in sitemaps[:1]:
+                sitemap_emails = crawl_sitemap_for_emails(sitemap_url, max_urls=15)
+                if sitemap_emails:
+                    email = sitemap_emails[0]
+                    break
+        
+        # Quaternary: domain guessing
+        if not email and deep_scrape:
+            parsed = urlparse(final_url)
+            domain = parsed.netloc.replace('www.', '')
+            guessed = guess_emails_from_domain(domain)
+            if guessed:
+                email = guessed[0]
+        
+        # Deep scrape: try contact pages if still missing phone or email
         if deep_scrape and (not email or not phone):
             contact_urls = find_contact_pages(final_url)
-            for contact_url in contact_urls[:2]:  # Try top 2 contact pages
+            for contact_url in contact_urls[:3]:  # Try top 3 contact pages
                 try:
-                    contact_resp = requests.get(contact_url, headers={'User-Agent': USER_AGENT}, timeout=15)
+                    contact_resp = requests.get(contact_url, headers=headers, timeout=15)
                     if contact_resp.status_code == 200:
                         contact_soup = BeautifulSoup(contact_resp.text, 'html.parser')
-                        contact_emails = extract_emails_aggressive(contact_resp.text, contact_soup)
+                        contact_emails = extract_all_emails_from_page(contact_resp.text, contact_soup, contact_url)
                         contact_phones = extract_phones_aggressive(contact_resp.text, contact_soup)
                         
                         if not email and contact_emails:

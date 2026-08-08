@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnswerFirst AI — Complete Your Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+  :root{
+    --void:#0a0a0f; --bg:#0a0a0f; --bg-card:#111118; --bg-input:#0d0d14;
+    --text:#f8fafc; --text-muted:#9a9a9a; --text-dim:#64748b;
+    --border:rgba(255,255,255,0.08); --border-focus:rgba(128,82,255,0.5);
+    --iris:#8052ff; --iris-glow:rgba(128,82,255,0.25);
+    --saffron:#ffb829; --saffron-glow:rgba(255,184,41,0.2);
+    --radius:16px; --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Geist',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bg-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
+  .bg-orb-1{top:-10%;left:-10%;width:50vw;height:50vw;background:var(--iris);opacity:0.06;}
+  .bg-orb-2{bottom:-10%;right:-10%;width:40vw;height:40vw;background:var(--saffron);opacity:0.04;}
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 5%;
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(10,10,15,0.7);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  }
+  .nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem;color:var(--text);text-decoration:none;}
+  .nav-logo-icon{
+    width:32px;height:32px;border-radius:8px;
+    background:linear-gradient(135deg,var(--iris),var(--saffron));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;
+  }
+  .main{position:relative;z-index:1;padding:120px 5% 60px;max-width:900px;margin:0 auto;}
+  .card{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:32px;margin-bottom:20px;
+  }
+  .badge{display:inline-block;padding:6px 14px;background:var(--iris-glow);color:var(--iris);border-radius:100px;font-size:0.85rem;font-weight:600;margin-bottom:16px;}
+  .card-title{font-size:1.75rem;font-weight:700;margin-bottom:8px;letter-spacing:-0.02em;}
+  .card-subtitle{color:var(--text-muted);font-size:0.95rem;margin-bottom:24px;}
+  .price{font-size:2.5rem;font-weight:700;margin-bottom:4px;}
+  .period{color:var(--text-muted);font-size:0.95rem;margin-bottom:20px;}
+  .features{list-style:none;margin-bottom:28px;}
+  .features li{padding:10px 0;border-bottom:1px solid var(--border);font-size:0.95rem;color:var(--text-muted);display:flex;align-items:center;gap:10px;}
+  .features li:last-child{border-bottom:none;}
+  .features li::before{content:'✓';color:var(--saffron);font-weight:700;}
+  .btn{
+    width:100%;padding:16px;border-radius:100px;font-weight:600;font-size:1rem;border:none;
+    cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;
+    display:block;transition:all var(--transition);
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--iris),#5b21b6);color:#fff;
+    box-shadow:0 8px 30px var(--iris-glow);
+  }
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--iris-glow);}
+  .btn-secondary{
+    background:rgba(255,255,255,0.05);color:var(--text);border:1px solid var(--border);
+    margin-top:12px;
+  }
+  .btn-secondary:hover{background:rgba(255,255,255,0.1);}
+  .form-group{margin-bottom:20px;}
+  label{display:block;font-weight:600;margin-bottom:8px;font-size:0.85rem;color:var(--text-muted);}
+  input,select{
+    width:100%;padding:12px 16px;background:var(--bg-input);border:1.5px solid var(--border);
+    border-radius:12px;color:var(--text);font-family:inherit;font-size:0.95rem;
+    transition:border-color var(--transition),box-shadow var(--transition);
+  }
+  input:focus,select:focus{outline:none;border-color:var(--iris);box-shadow:0 0 0 3px var(--iris-glow);}
+  .error-msg{color:#ef4444;font-size:0.9rem;margin-top:8px;display:none;text-align:center;}
+  .guarantee{font-size:0.85rem;color:var(--text-dim);margin-top:16px;text-align:center;}
+</style>
+</head>
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <nav>
+    <a href="/" class="nav-logo"><div class="nav-logo-icon">A</div><span>AnswerFirst AI</span></a>
+  </nav>
+  <div class="main">
+    <div class="card" id="order-card">
+      <div class="badge" id="order-badge">Complete Payment</div>
+      <div class="card-title" id="order-title">Complete Your Order</div>
+      <div class="price" id="order-price">$0<span class="period">/mo</span></div>
+      <div class="period" id="order-desc">Loading...</div>
+      <ul class="features" id="order-features"></ul>
+      <button class="btn btn-primary" id="pay-btn">Proceed to PayPal →</button>
+      <button class="btn btn-secondary" id="info-btn">Confirm Business Info</button>
+      <div class="error-msg" id="error"></div>
+      <p class="guarantee">🔒 14-Day Guarantee — Fill Your Calendar or You Owe Nothing</p>
+    </div>
+  </div>
+<script>
+const PLAN_DATA = {
+  'Starter': { price: '$1,500', features: ['AI phone answering','Up to 200 calls/mo','Basic CRM','Email support'] },
+  'Growth': { price: '$2,500', features: ['AI phone + chatbot','Up to 500 calls/mo','Advanced CRM + analytics','SMS automation','Priority support'] },
+  'Authority': { price: '$4,000', features: ['Unlimited calls','Custom AI training','Full CRM + API access','Dedicated account manager','White-label options'] },
+  'SEO Starter': { price: '$497', features: ['Technical SEO audit & fixes','10 core service pages optimized','Google Business Profile setup','Basic citation building','Monthly ranking report'] },
+  'SEO Growth': { price: '$997', features: ['Everything in Starter','20 pages + blog content','Advanced local SEO','Review generation system','Competitor tracking'] },
+  'SEO Authority': { price: '$1,497', features: ['Everything in Growth','Unlimited pages & content','Full link building','Dedicated SEO strategist','Custom integrations'] }
+};
+
+(async function(){
+  const titleEl = document.getElementById('order-title');
+  const priceEl = document.getElementById('order-price');
+  const descEl = document.getElementById('order-desc');
+  const featuresEl = document.getElementById('order-features');
+  const payBtn = document.getElementById('pay-btn');
+  const infoBtn = document.getElementById('info-btn');
+  const errorEl = document.getElementById('error');
+
+  let currentPlan = '';
+  let paypalLink = '';
+
+  function renderPlan(plan){
+    const data = PLAN_DATA[plan];
+    if(!data) return;
+    currentPlan = plan;
+    titleEl.textContent = 'Complete Your Order — ' + plan;
+    priceEl.innerHTML = data.price + '<span class="period">/mo</span>';
+    descEl.textContent = plan === 'Growth' ? 'Most popular plan for growing contractors.' : '';
+    featuresEl.innerHTML = data.features.map(f => `<li>${f}</li>`).join('');
+  }
+
+  // Try to load from server
+  try{
+    const token = document.cookie.split('; ').find(r => r.startsWith('portal_token='));
+    if(token){
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/account', { headers: { 'Authorization': 'Bearer ' + token.split('=')[1] }});
+      const j = await r.json();
+      if(j.client && j.client.package && j.client.package !== 'Basic'){
+        renderPlan(j.client.package);
+      }
+    }
+  }catch(e){}
+
+  // Pre-select from URL
+  const params = new URLSearchParams(window.location.search);
+  const prePlan = params.get('plan');
+  if(prePlan && PLAN_DATA[prePlan]) renderPlan(prePlan);
+
+  infoBtn.addEventListener('click', async ()=>{
+    errorEl.style.display='none';
+    const biz = prompt('Business Name:') || '';
+    const phone = prompt('Phone Number:') || '';
+    const company = prompt('Company Name:') || '';
+    if(!biz) return;
+    try{
+      const token = document.cookie.split('; ').find(r => r.startsWith('portal_token='));
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/checkout/submit',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({business_name: biz, phone, company})
+      });
+      const j = await r.json();
+      if(!r.ok) throw new Error(j.error);
+      alert('Business information saved!');
+    }catch(err){
+      errorEl.textContent = err.message;
+      errorEl.style.display='block';
+    }
+  });
+
+  payBtn.addEventListener('click', async ()=>{
+    errorEl.style.display='none';
+    if(!currentPlan){
+      const plan = prompt('Enter plan name (Starter, Growth, Authority, SEO Starter, SEO Growth, SEO Authority):');
+      if(!plan || !PLAN_DATA[plan]){ errorEl.textContent='Please select a valid plan first.'; errorEl.style.display='block'; return; }
+      try{
+        const token = document.cookie.split('; ').find(r => r.startsWith('portal_token='));
+        const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/plan/select',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({plan})
+        });
+        const j = await r.json();
+        if(!r.ok) throw new Error(j.error);
+        renderPlan(plan);
+      }catch(err){
+        errorEl.textContent = err.message;
+        errorEl.style.display='block';
+        return;
+      }
+    }
+    // Open PayPal
+    const token = document.cookie.split('; ').find(r => r.startsWith('portal_token='));
+    if(token){
+      try{
+        const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/checkout/submit',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({})
+        });
+        const j = await r.json();
+        if(r.ok && j.paypal_link){
+          window.open(j.paypal_link, '_blank', 'noopener');
+          setTimeout(()=>{ window.location.href='/portal-order-success.html'; }, 1500);
+          return;
+        }
+      }catch(e){}
+    }
+    // Fallback: open plan-specific PayPal link
+    const fallback = {
+      'Starter':'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4',
+      'Growth':'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
+      'Authority':'https://www.paypal.com/ncp/payment/TZYZ5AEAWFG2E',
+      'SEO Starter':'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4',
+      'SEO Growth':'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
+      'SEO Authority':'https://www.paypal.com/ncp/payment/TZYZ5AEAWFG2E'
+    };
+    const link = fallback[currentPlan] || 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4';
+    window.open(link, '_blank', 'noopener');
+    setTimeout(()=>{ window.location.href='/portal-order-success.html'; }, 1500);
+  });
+})();
+</script>
+</body>
+</html>

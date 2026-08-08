@@ -1141,13 +1141,13 @@ body {
       contactBtn.disabled = true;
       contactBtn.textContent = 'Sending...';
     }
-    fetch('/api/contact', {
+    fetch('https://answerfirst-ai-backend.onrender.com/portal/api/order-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     }).then(r => r.json()).then(res => {
-      if (res.status === 'ok') {
-        showToast('Thanks! We\'ll be in touch within 2 hours to schedule your demo.', 'success');
+      if (res.status === 'intent_created') {
+        showToast('✓ Account creation link sent! Check your email to continue.', 'success');
         contactForm.reset();
       } else {
         showToast(res.error || 'Something went wrong. Please try again or call 562-259-3384.', 'error');

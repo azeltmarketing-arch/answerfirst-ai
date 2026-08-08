@@ -1,243 +1,132 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AnswerFirst AI — Account</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>AnswerFirst AI — Create Your Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#ffffff;--bg-alt:#f8fafc;--bg-card:#ffffff;--text:#0f172a;--text-muted:#475569;--border:#e2e8f0;--primary:#0f172a;--accent:#3b82f6;--accent-glow:rgba(59,130,246,0.25);--success:#10b981;--success-glow:rgba(16,185,129,0.25);--shadow:0 4px 20px rgba(0,0,0,0.06);--radius:16px;--transition:0.3s cubic-bezier(0.4,0,0.2,1);}
-[data-theme="dark"]{--bg:#0a0a0a;--bg-alt:#0f0f0f;--bg-card:#171717;--text:#ffffff;--text-muted:#a3a3a3;--border:#262626;--primary:#ffffff;--shadow:0 4px 20px rgba(0,0,0,0.4);}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition);}
-.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(20px);background:rgba(255,255,255,0.7);border-bottom:1px solid var(--border);transition:all var(--transition);}
-[data-theme="dark"] .nav{background:rgba(10,10,10,0.75);}
-.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;color:var(--text);text-decoration:none;}
-.nav-logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--success));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:0.9rem;}
-.nav-links{display:flex;gap:24px;align-items:center;}
-.nav-link{color:var(--text-muted);text-decoration:none;font-weight:500;font-size:0.9rem;transition:color var(--transition);}
-.nav-link:hover{color:var(--text);}
-.nav-link.active{color:var(--accent);}
-.theme-toggle{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
-.main{padding:100px 5% 40px;max-width:800px;margin:0 auto;}
-.page-header{margin-bottom:32px;}
-.page-title{font-size:1.75rem;font-weight:800;margin-bottom:4px;}
-.page-subtitle{color:var(--text-muted);font-size:0.95rem;}
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:20px;}
-.form-group{margin-bottom:20px;}
-label{display:block;font-weight:600;margin-bottom:8px;font-size:0.9rem;}
-input,select{width:100%;padding:12px 16px;background:var(--bg-alt);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:1rem;transition:border-color var(--transition);}
-input:focus,select:focus{outline:none;border-color:var(--accent);}
-button[type="submit"]{padding:12px 28px;border-radius:100px;font-weight:600;font-size:0.95rem;border:none;cursor:pointer;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;box-shadow:0 4px 14px var(--accent-glow);transition:all var(--transition);}
-button[type="submit"]:hover{transform:translateY(-2px);}
-.msg{margin-top:12px;font-size:0.9rem;display:none;}
-.msg.success{color:var(--success);display:block;}
-.msg.error{color:#ef4444;display:block;}
-@media(max-width:768px){.nav-links{display:none;}}
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+  :root{
+    --void:#0a0a0f; --bg:#0a0a0f; --bg-card:#111118; --bg-input:#0d0d14;
+    --text:#f8fafc; --text-muted:#9a9a9a; --text-dim:#64748b;
+    --border:rgba(255,255,255,0.08); --border-focus:rgba(128,82,255,0.5);
+    --iris:#8052ff; --iris-glow:rgba(128,82,255,0.25);
+    --saffron:#ffb829; --saffron-glow:rgba(255,184,41,0.2);
+    --radius:16px; --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Geist',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bg-orb{
+    position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;
+  }
+  .bg-orb-1{top:-10%;left:-10%;width:50vw;height:50vw;background:var(--iris);opacity:0.06;}
+  .bg-orb-2{bottom:-10%;right:-10%;width:40vw;height:40vw;background:var(--saffron);opacity:0.04;}
+  .card{
+    position:relative;z-index:1;width:100%;max-width:480px;
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:48px;box-shadow:0 8px 40px rgba(0,0,0,0.5);
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.1rem;margin-bottom:32px;color:var(--text);}
+  .logo-icon{
+    width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(135deg,var(--iris),var(--saffron));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;
+  }
+  h1{font-size:1.75rem;font-weight:700;margin-bottom:8px;letter-spacing:-0.02em;}
+  .subtitle{color:var(--text-muted);font-size:0.95rem;margin-bottom:28px;line-height:1.6;}
+  .form-group{margin-bottom:20px;}
+  label{display:block;font-weight:600;margin-bottom:8px;font-size:0.85rem;color:var(--text-muted);}
+  input{
+    width:100%;padding:12px 16px;background:var(--bg-input);border:1.5px solid var(--border);
+    border-radius:12px;color:var(--text);font-family:inherit;font-size:0.95rem;
+    transition:border-color var(--transition),box-shadow var(--transition);
+  }
+  input:focus{outline:none;border-color:var(--iris);box-shadow:0 0 0 3px var(--iris-glow);}
+  button[type="submit"]{
+    width:100%;padding:14px;border-radius:100px;font-weight:600;font-size:1rem;border:none;
+    cursor:pointer;background:linear-gradient(135deg,var(--iris),#5b21b6);color:#fff;
+    box-shadow:0 8px 30px var(--iris-glow);transition:all var(--transition);font-family:inherit;
+    margin-top:8px;
+  }
+  button[type="submit"]:hover{transform:translateY(-2px);box-shadow:0 12px 40px var(--iris-glow);}
+  .footer{margin-top:24px;text-align:center;font-size:0.9rem;color:var(--text-muted);}
+  .footer a{color:var(--iris);text-decoration:none;font-weight:600;}
+  .back-link{display:inline-block;margin-bottom:20px;color:var(--iris);text-decoration:none;font-weight:600;font-size:0.9rem;}
+  .error-msg{color:#ef4444;font-size:0.9rem;margin-top:8px;display:none;}
+  .success-banner{
+    display:none;margin-top:12px;padding:12px;border-radius:12px;
+    background:rgba(16,185,129,0.1);color:#10b981;font-size:0.9rem;font-weight:600;
+    border:1px solid rgba(16,185,129,0.3);text-align:center;
+  }
+  .token-info{font-size:0.8rem;color:var(--text-dim);margin-top:16px;text-align:center;}
 </style>
 </head>
 <body>
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">A</div><span>AnswerFirst AI</span></a>
-  <div class="nav-links">
-    <a href="/portal-dashboard.html" class="nav-link">Dashboard</a>
-    <a href="/portal-appointments.html" class="nav-link">Appointments</a>
-    <a href="/portal-leads.html" class="nav-link">Leads</a>
-    <a href="/portal-billing.html" class="nav-link">Billing</a>
-    <a href="/portal-support.html" class="nav-link">Support</a>
-    <a href="/portal-calls.html" class="nav-link">Calls</a>
-    <a href="/portal-onboarding.html" class="nav-link">Onboarding</a>
-    <a href="/portal-documents.html" class="nav-link">Documents</a>
-    <a href="/portal-account.html" class="nav-link active">Account</a>
-    <a href="/portal-register.html" class="nav-link">Get Started</a>
-    <button class="theme-toggle" id="themeToggle">🌙</button>
-    <a href="#" class="nav-link" onclick="document.cookie='portal_token=; Max-Age=0; path=/;
-location.href='/portal/login';">Logout</a>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <a href="/" class="back-link">← Back to AnswerFirst AI</a>
+  <div class="card">
+    <div class="logo"><div class="logo-icon">A</div><span>AnswerFirst AI</span></div>
+    <h1>Create your account</h1>
+    <p class="subtitle">You're one step away from 24/7 AI-powered calls. Create your account to select your plan and complete setup.</p>
+    <form id="account-form">
+      <div class="form-group"><label>Business Name</label><input type="text" id="business" required placeholder="Your HVAC Company"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="password" required minlength="6" placeholder="Min 6 characters"></div>
+      <button type="submit">Create Account →</button>
+      <div class="error-msg" id="error"></div>
+      <div class="success-banner" id="success">✓ Account created! Redirecting to plan selection...</div>
+    </form>
+    <div class="token-info" id="token-info"></div>
   </div>
-</nav>
-<div class="main">
-  <div class="page-header">
-    <h1 class="page-title">Account Settings</h1>
-    <p class="page-subtitle">Manage your profile and preferences.</p>
-  </div>
-  <form id="account-form" class="card">
-    <div class="form-group"><label>Business Name</label><input type="text" id="acc-business"></div>
-    <div class="form-group"><label>Contact Name</label><input type="text" id="acc-name"></div>
-    <div class="form-group"><label>Email</label><input type="email" id="acc-email"></div>
-    <div class="form-group"><label>Phone</label><input type="tel" id="acc-phone"></div>
-    <button type="submit">Save Changes</button>
-    <div class="msg" id="account-msg"></div>
-  </form>
-  <div class="card" id="verify-card" style="display:none;">
-    <div class="page-title" style="margin-bottom:8px;">Verify Email</div>
-    <p class="page-subtitle" style="margin-bottom:16px;">Verify your email to unlock portal access.</p>
-    <button type="button" id="resend-verify" style="padding:10px 20px;border-radius:100px;border:none;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;font-weight:600;cursor:pointer;">Resend Verification Email</button>
-    <div class="msg" id="verify-msg" style="margin-top:12px;"></div>
-  </div>
-  <div class="card" id="sms-card">
-    <div class="page-title" style="margin-bottom:8px;">SMS Notifications</div>
-    <p class="page-subtitle" style="margin-bottom:16px;">Get text alerts for appointments and support updates.</p>
-    <div class="form-group">
-      <label>Enable SMS</label>
-      <select id="sms-enabled">
-        <option value="1">On</option>
-        <option value="0">Off</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Phone Number</label>
-      <input type="tel" id="sms-phone" placeholder="5625551234">
-    </div>
-    <div class="form-group">
-      <label>Carrier</label>
-      <select id="sms-carrier">
-        <option value="att">AT&T</option>
-        <option value="verizon">Verizon</option>
-        <option value="tmobile">T-Mobile</option>
-        <option value="sprint">Sprint</option>
-        <option value="uscellular">US Cellular</option>
-      </select>
-    </div>
-    <button type="button" id="sms-save" style="padding:10px 20px;border-radius:100px;border:none;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;font-weight:600;cursor:pointer;">Save SMS Preferences</button>
-    <button type="button" id="sms-test" style="padding:10px 20px;border-radius:100px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-weight:600;cursor:pointer;margin-left:8px;">Test SMS</button>
-    <div class="msg" id="sms-msg" style="margin-top:12px;"></div>
-  </div>
-  <div class="card" id="satisfaction-card">
-    <div class="page-title" style="margin-bottom:8px;">How are we doing?</div>
-    <p class="page-subtitle" style="margin-bottom:16px;">Rate your experience and help us improve.</p>
-    <div id="satisfaction-widget">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;" id="score-buttons"></div>
-      <div class="form-group" style="margin-top:12px;">
-        <label style="font-weight:600;margin-bottom:8px;font-size:.9rem;display:block;">Notes (optional)</label>
-        <textarea id="satisfaction-notes" rows="3" placeholder="What’s working well or what could be better?" style="width:100%;padding:12px 16px;background:var(--bg-alt);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:1rem;"></textarea>
-      </div>
-      <button type="button" id="satisfaction-submit" style="padding:10px 20px;border-radius:100px;border:none;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;font-weight:600;cursor:pointer;">Submit Rating</button>
-      <div class="msg" id="satisfaction-msg" style="margin-top:12px;"></div>
-    </div>
-  </div>
-</div>
 <script>
-const html=document.documentElement;const toggle=document.getElementById('themeToggle');
-const saved=localStorage.getItem('theme');if(saved)html.setAttribute('data-theme',saved);
-else if(window.matchMedia('(prefers-color-scheme:dark)').matches)html.setAttribute('data-theme','dark');
-toggle.textContent=html.getAttribute('data-theme')==='dark'?'☀️':'🌙';
-toggle.addEventListener('click',()=>{const next=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',next);localStorage.setItem('theme',next);toggle.textContent=next==='dark'?'☀️':'🌙';});
-document.getElementById('account-form').addEventListener('submit',async(e)=>{
-e.preventDefault();const msg=document.getElementById('account-msg');
-const btn = e.target.querySelector('button[type="submit"]');
-if(btn){btn.disabled=true;btn.textContent='Saving...';}
-try{const r=await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business_name:document.getElementById('acc-business').value,name:document.getElementById('acc-name').value,email:document.getElementById('acc-email').value,phone:document.getElementById('acc-phone').value})});const j=await r.json();msg.className='msg '+(r.ok?'success':'error');msg.textContent=j.status==='saved'?'Settings saved.':(j.error||'Error');}catch{msg.className='msg error';msg.textContent='Connection error.';}
-if(btn){btn.disabled=false;btn.textContent='Save Changes';}
-});
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token') || '';
+  document.getElementById('token-info').textContent = token ? 'Secure link detected. Please complete your account below.' : 'No token provided.';
 
-const verifyCard = document.getElementById('verify-card');
-const verifyBtn = document.getElementById('resend-verify');
-const verifyMsg = document.getElementById('verify-msg');
-if (verifyBtn) {
-  verifyBtn.addEventListener('click', async () => {
-    if (!verifyMsg) return;
-    verifyMsg.className = 'msg';
-    verifyMsg.style.display = 'block';
-    verifyMsg.textContent = 'Sending...';
-    verifyBtn.disabled = true;
-    try {
-      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/send-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  async function loadIntent(){
+    if(!token) return;
+    try{
+      const r = await fetch(`https://answerfirst-ai-backend.onrender.com/portal/api/order-intent/${token}`);
       const j = await r.json();
-      verifyMsg.className = 'msg ' + (r.ok ? 'success' : 'error');
-      verifyMsg.textContent = r.ok ? 'Verification email sent.' : (j.error || 'Error');
-    } catch {
-      verifyMsg.className = 'msg error';
-      verifyMsg.textContent = 'Connection error.';
-    }
-    verifyBtn.disabled = false;
-  });
-}
-
-document.getElementById('sms-save').addEventListener('click', async () => {
-  const msg = document.getElementById('sms-msg');
-  msg.className = 'msg'; msg.style.display = 'block'; msg.textContent = 'Saving...';
-  const token = document.cookie.split('; ').find(row => row.startsWith('portal_token='))?.split('=')[1];
-  try {
-    const body = {
-      sms_enabled: parseInt(document.getElementById('sms-enabled').value, 10),
-      sms_phone: document.getElementById('sms-phone').value,
-      sms_carrier: document.getElementById('sms-carrier').value,
-    };
-    const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/account', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' },
-      body: JSON.stringify(body)
-    });
-    const j = await r.json();
-    msg.className = 'msg ' + (r.ok ? 'success' : 'error');
-    msg.textContent = r.ok ? 'SMS preferences saved.' : (j.error || 'Error');
-  } catch {
-    msg.className = 'msg error'; msg.textContent = 'Connection error.';
+      if(j.intent){
+        const biz = document.getElementById('business');
+        if(biz && !biz.value) biz.value = j.intent.company || '';
+      }
+    }catch(e){}
   }
-});
+  loadIntent();
 
-document.getElementById('sms-test').addEventListener('click', async () => {
-  const msg = document.getElementById('sms-msg');
-  msg.className = 'msg'; msg.style.display = 'block'; msg.textContent = 'Sending...';
-  const token = document.cookie.split('; ').find(row => row.startsWith('portal_token='))?.split('=')[1];
-  try {
-    const body = {
-      to_phone: document.getElementById('sms-phone').value,
-      carrier: document.getElementById('sms-carrier').value,
-      message: 'Test SMS from AnswerFirst AI portal.',
-    };
-    const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/sms/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' },
-      body: JSON.stringify(body)
-    });
-    const j = await r.json();
-    msg.className = 'msg ' + (r.ok ? 'success' : 'error');
-    msg.textContent = r.ok ? 'Test SMS sent.' : (j.error || 'Error');
-  } catch {
-    msg.className = 'msg error'; msg.textContent = 'Connection error.';
-  }
-});
-
-(function initSatisfactionWidget() {
-  const container = document.getElementById('score-buttons');
-  const submitBtn = document.getElementById('satisfaction-submit');
-  const notesEl = document.getElementById('satisfaction-notes');
-  const msgEl = document.getElementById('satisfaction-msg');
-  if (!container || !submitBtn) return;
-  let selected = 0;
-  for (let i = 1; i <= 10; i++) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = i;
-    btn.style.cssText = 'min-width:40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text);font-weight:700;cursor:pointer;transition:all .2s;';
-    btn.dataset.score = String(i);
-    btn.addEventListener('click', () => {
-      selected = i;
-      Array.from(container.children).forEach(b => {
-        const val = Number(b.dataset.score);
-        b.style.background = val <= selected ? 'var(--accent)' : 'var(--bg-alt)';
-        b.style.color = val <= selected ? '#fff' : 'var(--text)';
-        b.style.borderColor = val <= selected ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('account-form').addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    const errorEl = document.getElementById('error');
+    const successEl = document.getElementById('success');
+    errorEl.style.display='none'; successEl.style.display='none';
+    try{
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/account/create',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          token: token,
+          password: document.getElementById('password').value,
+          business_name: document.getElementById('business').value,
+        })
       });
-    });
-    container.appendChild(btn);
-  }
-  submitBtn.addEventListener('click', async () => {
-    if (!selected) { if (msgEl) { msgEl.className = 'msg error'; msgEl.textContent = 'Please select a score.'; msgEl.style.display = 'block'; } return; }
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
-    const token = document.cookie.split('; ').find(row => row.startsWith('portal_token='))?.split('=')[1];
-    try {
-      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/satisfaction', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Portal-Token': token || '' }, body: JSON.stringify({ score: selected, notes: notesEl ? notesEl.value : '' }) });
       const j = await r.json();
-      if (msgEl) { msgEl.className = 'msg ' + (r.ok ? 'success' : 'error'); msgEl.textContent = r.ok ? 'Thanks! Your feedback was saved.' : (j.error || 'Error'); msgEl.style.display = 'block'; }
-    } catch {
-      if (msgEl) { msgEl.className = 'msg error'; msgEl.textContent = 'Connection error.'; msgEl.style.display = 'block'; }
+      if(!r.ok) throw new Error(j.error || 'Failed');
+      successEl.style.display='block';
+      setTimeout(()=>{ window.location.href = j.redirect || '/portal-plans.html'; }, 1200);
+    }catch(err){
+      errorEl.textContent = err.message;
+      errorEl.style.display='block';
     }
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit Rating';
   });
 })();
 </script>

@@ -13,7 +13,14 @@ from email.mime.text import MIMEText
 JWT_SECRET = os.environ.get('JWT_SECRET', secrets.token_hex(32))
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["https://answerfirst-ai.vercel.app", "https://*.vercel.app"])
+CORS(app, supports_credentials=True, origins=[
+    "https://answerfirst-ai.vercel.app",
+    "https://*.vercel.app",
+    "http://localhost:5050",
+    "http://127.0.0.1:5050",
+    "http://localhost:4173",
+    "http://localhost:5173",
+])
 app.secret_key = os.environ.get("PORTAL_SECRET", secrets.token_hex(32))
 DB_PATH = os.environ.get("PORTAL_DB_PATH", os.path.join(os.path.dirname(__file__), "portal.db"))
 
@@ -138,6 +145,22 @@ def create_tables():
             notes TEXT DEFAULT '',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (client_id) REFERENCES clients(id)
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS order_intents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER,
+            email TEXT DEFAULT '',
+            name TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
+            company TEXT DEFAULT '',
+            volume TEXT DEFAULT '',
+            account_token TEXT UNIQUE DEFAULT '',
+            status TEXT DEFAULT 'awaiting_account',
+            expires_at TEXT DEFAULT '',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (order_id) REFERENCES orders(id)
         )
     """)
     c.execute("""
@@ -1520,7 +1543,241 @@ def api_forgot_password():
         # Don't reveal if email exists
         return jsonify({'status': 'ok', 'message': 'If an account exists, a reset email was sent.'}), 200
 
-# ===================== STATIC PUBLIC SITE =====================
+# ===================== ORDER FLOW =====================
+
+def _plan_amount(plan: str) -> float:
+    amounts = {
+        'Starter': 1500, 'Growth': 2500, 'Authority': 4000,
+        'SEO Starter': 497, 'SEO Growth': 997, 'SEO Authority': 1497,
+        'TBD': 0
+    }
+    return amounts.get(plan, 0)
+
+
+def _paypal_link(plan: str) -> str:
+    links = {
+        'Starter': 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4',
+        'Growth': 'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
+        'Authority': 'https://www.paypal.com/ncp/payment/TZYZ5AEAWFG2E',
+        'SEO Starter': 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4',
+        'SEO Growth': 'https://www.paypal.com/ncp/payment/JN4MF8LPWSWQE',
+        'SEO Authority': 'https://www.paypal.com/ncp/payment/TZYZ5AEAWFG2E',
+    }
+    return links.get(plan, 'https://www.paypal.com/ncp/payment/GCMFXKYWWZKG4')
+
+
+@app.route('/portal/api/order-intent', methods=['POST'])
+def create_order_intent():
+    """Step 1: Client submits contact form → create pending order intent, send email with auth link."""
+    data = request.json or {}
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
+    phone = data.get('phone', '').strip()
+    company = data.get('company', '').strip()
+    volume = data.get('volume', '')
+    plan = data.get('plan', '')  # optional pre-selected plan
+    notes = data.get('notes', '').strip()
+
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+
+    db = get_db()
+    existing = db.execute('SELECT id FROM clients WHERE email = ?', (email,)).fetchone()
+    client_id = existing['id'] if existing else None
+
+    expires_at = (datetime.now() + timedelta(hours=42)).isoformat()
+    db.execute(
+        'INSERT INTO orders (client_id, package, amount, status, payment_method, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (client_id, plan or 'TBD', _plan_amount(plan or 'TBD'), 'order_created', 'paypal', notes or f'Volume: {volume}', datetime.now().isoformat())
+    )
+    order_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
+
+    account_token = secrets.token_urlsafe(32)
+    db.execute(
+        'INSERT INTO order_intents (order_id, email, name, phone, company, volume, account_token, status, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        (order_id, email, name, phone, company, volume, account_token, 'awaiting_account', expires_at)
+    )
+    db.commit()
+    db.close()
+
+    account_url = f"{request.host_url}portal-account.html?token={account_token}"
+    subject = "Welcome to AnswerFirst AI — Create Your Account"
+    body = f"""Dear {name or 'Valued Partner'},
+
+Thank you for your interest in AnswerFirst AI. We're excited to show you how our AI-powered phone agents can transform your HVAC or roofing business.
+
+**What happens next:**
+
+1. Create your client account (takes 60 seconds)
+   → {account_url}
+
+2. Select your preferred plan
+   → You'll choose from Starter, Growth, or Authority after account creation
+
+3. Complete your order & payment
+   → Secure checkout via PayPal
+
+**Your 14-Day Guarantee**
+If we don't deliver 10+ qualified appointments in your first 30 days, you get a full refund. No contracts. Cancel anytime.
+
+**Need help?**
+Reply to this email or call us at 562-259-3384 (Mon-Fri 9am-6pm PST).
+
+We look forward to helping you fill your calendar.
+
+Best regards,
+The AnswerFirst AI Team
+azelt.marketing@gmail.com"""
+
+    _send_email(email, subject, body)
+
+    return jsonify({'status': 'intent_created', 'order_id': order_id, 'account_url': account_url}), 201
+
+
+@app.route('/portal/api/order-intent/<token>')
+def get_order_intent(token):
+    db = get_db()
+    intent = db.execute('SELECT * FROM order_intents WHERE account_token = ?', (token,)).fetchone()
+    db.close()
+    if not intent:
+        return jsonify({'error': 'Invalid or expired link'}), 404
+    if datetime.fromisoformat(intent['expires_at']) < datetime.now():
+        return jsonify({'error': 'Link expired. Please contact support.'}), 410
+    return jsonify({'intent': dict(intent)}), 200
+
+
+@app.route('/portal/api/account/create', methods=['POST'])
+def create_account_from_intent():
+    data = request.json or {}
+    token = data.get('token', '').strip()
+    password = data.get('password', '').strip()
+    business_name = data.get('business_name', '').strip()
+
+    if not token or not password:
+        return jsonify({'error': 'Token and password required'}), 400
+
+    db = get_db()
+    intent = db.execute('SELECT * FROM order_intents WHERE account_token = ?', (token,)).fetchone()
+    if not intent:
+        db.close()
+        return jsonify({'error': 'Invalid link'}), 404
+    if datetime.fromisoformat(intent['expires_at']) < datetime.now():
+        db.close()
+        return jsonify({'error': 'Link expired'}), 410
+
+    email = intent['email']
+    existing = db.execute('SELECT id FROM clients WHERE email = ?', (email,)).fetchone()
+    if existing:
+        db.close()
+        return jsonify({'error': 'Account already exists. Please log in.'}), 409
+
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    db.execute(
+        'INSERT INTO clients (email, password_hash, business_name, contact_name, phone) VALUES (?, ?, ?, ?, ?)',
+        (email, password_hash, business_name or intent['company'], intent['name'], intent['phone'])
+    )
+    client_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
+
+    db.execute('UPDATE orders SET client_id = ? WHERE id = ?', (client_id, intent['order_id']))
+    db.execute("UPDATE order_intents SET status = 'account_created' WHERE account_token = ?", (token,))
+    db.commit()
+    db.close()
+
+    token_jwt = create_jwt(client_id)
+    resp = jsonify({'status': 'ok', 'client_id': client_id, 'redirect': '/portal-plans.html'})
+    resp.set_cookie('portal_token', token_jwt, max_age=7*24*60*60, httponly=True, samesite='Lax')
+    return resp, 201
+
+
+@app.route('/portal/api/plan/select', methods=['POST'])
+def select_plan():
+    client = require_client()
+    if not client:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.json or {}
+    plan = data.get('plan', '').strip()
+
+    if plan not in ('Starter', 'Growth', 'Authority', 'SEO Starter', 'SEO Growth', 'SEO Authority'):
+        return jsonify({'error': 'Invalid plan'}), 400
+
+    db = get_db()
+    order = db.execute(
+        'SELECT * FROM orders WHERE client_id = ? AND status IN (?, ?) ORDER BY id DESC LIMIT 1',
+        (client['id'], 'order_created', 'awaiting_payment')
+    ).fetchone()
+    if not order:
+        db.close()
+        return jsonify({'error': 'No pending order found'}), 404
+
+    amount = _plan_amount(plan)
+    paypal_link = _paypal_link(plan)
+    db.execute(
+        'UPDATE orders SET package = ?, amount = ?, status = ?, payment_link = ? WHERE id = ?',
+        (plan, amount, 'awaiting_payment', paypal_link, order['id'])
+    )
+    db.execute(
+        'INSERT INTO onboarding (client_id, step_title, step_key, status, notes) VALUES (?, ?, ?, ?, ?)',
+        (client['id'], f'Selected {plan}', 'plan_selection', 'completed', f'Plan: {plan}, Amount: ${amount}/mo')
+    )
+    db.commit()
+    db.close()
+
+    return jsonify({'status': 'plan_selected', 'plan': plan, 'amount': amount, 'paypal_link': paypal_link, 'redirect': '/portal-checkout.html'}), 200
+
+
+@app.route('/portal/api/checkout/submit', methods=['POST'])
+def submit_checkout():
+    client = require_client()
+    if not client:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.json or {}
+    business_name = data.get('business_name', '').strip()
+    phone = data.get('phone', '').strip()
+    company = data.get('company', '').strip()
+
+    db = get_db()
+    order = db.execute(
+        'SELECT * FROM orders WHERE client_id = ? AND status = ? ORDER BY id DESC LIMIT 1',
+        (client['id'], 'awaiting_payment')
+    ).fetchone()
+    if not order:
+        db.close()
+        return jsonify({'error': 'No pending checkout found'}), 404
+
+    db.execute(
+        'UPDATE orders SET notes = ? WHERE id = ?',
+        (f'Business: {business_name}\nPhone: {phone}\nCompany: {company}\n' + (order['notes'] or ''), order['id'])
+    )
+    db.execute(
+        'UPDATE clients SET business_name = ?, contact_name = ?, phone = ? WHERE id = ?',
+        (business_name, client['contact_name'], phone, client['id'])
+    )
+    db.commit()
+    db.close()
+
+    return jsonify({'status': 'ready', 'paypal_link': order['payment_link'], 'order_id': order['id']}), 200
+
+
+@app.route('/portal/api/admin/cancel-expired', methods=['POST'])
+def cancel_expired_orders():
+    cutoff = (datetime.now() - timedelta(hours=42)).isoformat()
+    db = get_db()
+    expired = db.execute(
+        'SELECT id FROM orders WHERE status = ? AND created_at < ?',
+        ('order_created', cutoff)
+    ).fetchall()
+    count = 0
+    for row in expired:
+        db.execute('UPDATE orders SET status = ? WHERE id = ?', ('cancelled', row['id']))
+        count += 1
+    db.commit()
+    db.close()
+    return jsonify({'cancelled': count}), 200
+
+
+# ===================== PUBLIC SITE =====================
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public-site')
 
 @app.route('/')
