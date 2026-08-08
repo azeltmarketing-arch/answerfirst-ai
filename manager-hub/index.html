@@ -675,11 +675,18 @@
                     addLog(`Scraped ${data.total_scraped || 0} businesses total.`, 'info');
                     addLog(`Skipped AI: ${data.skipped_ai || 0} | Skipped no contact: ${data.skipped_no_contact || 0}`, 'skip');
                     
+                    if (data.per_niche && data.per_niche.length > 1) {
+                        addLog('Breakdown by niche:', 'info');
+                        data.per_niche.forEach(n => {
+                            addLog(`  • ${n.niche}: ${n.found} leads, ${n.skipped_ai} AI skipped, ${n.skipped_no_contact} no contact`, 'info');
+                        });
+                    }
+                    
                     // Show top prospects
                     if (data.prospects && data.prospects.length > 0) {
                         addLog('Top prospects found:', 'info');
                         data.prospects.slice(0, 5).forEach(p => {
-                            addLog(`  • ${p.name} | Fit: ${p.fit_score}/100 | Email: ${p.email || 'none'} | Phone: ${p.phone || 'none'}`, p.fit_score >= 65 ? 'success' : 'skip');
+                            addLog(`  • ${p.name} | ${p.niche} | Fit: ${p.fit_score}/100 | Email: ${p.email || 'none'} | Phone: ${p.phone || 'none'}`, p.fit_score >= 65 ? 'success' : 'skip');
                         });
                     }
                     

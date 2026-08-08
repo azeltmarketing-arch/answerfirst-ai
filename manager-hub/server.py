@@ -468,6 +468,7 @@ def discover_leads():
     total_skipped_ai = 0
     total_skipped_no_contact = 0
     total_businesses = 0
+    per_niche = []
     
     for niche in niches:
         niche = niche.strip()
@@ -515,6 +516,12 @@ def discover_leads():
         total_skipped_ai += skipped_ai
         total_skipped_no_contact += skipped_no_contact
         all_prospects.extend(prospects)
+        per_niche.append({
+            'niche': niche,
+            'found': len(prospects),
+            'skipped_ai': skipped_ai,
+            'skipped_no_contact': skipped_no_contact
+        })
     
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -540,6 +547,7 @@ def discover_leads():
         'total_scraped': total_businesses,
         'skipped_ai': total_skipped_ai,
         'skipped_no_contact': total_skipped_no_contact,
+        'per_niche': per_niche,
         'prospects': all_prospects
     })
 
