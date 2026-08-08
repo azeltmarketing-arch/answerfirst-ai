@@ -154,7 +154,7 @@ document.getElementById('login-form').addEventListener('submit',async(e)=>{
 
   if(btn){btn.disabled=true;btn.textContent='Logging in...';}
 
-  try{const r=await fetch('/portal/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('login-email').value,password:document.getElementById('login-password').value})});const j=await r.json();if(r.ok&&j._session_token){window.location.href='/portal-dashboard.html';}else{err.style.display='block';err.textContent=j.error||'Login failed';}else{err.style.display='block';err.textContent=j.error||'Login failed';if(j.verification_required){const b=document.getElementById('verify-banner');if(b){b.style.display='block';}}}}catch(ex){err.style.display='block';err.textContent='Connection error';}
+  try{const r=await fetch('/portal/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('login-email').value,password:document.getElementById('login-password').value})});const j=await r.json();if(r.ok&&j._session_token){window.location.href='/portal-dashboard.html';}else{err.style.display='block';err.textContent=j.error||'Login failed';if(j.verification_required){const b=document.getElementById('verify-banner');if(b){b.style.display='block';}}}}catch(ex){err.style.display='block';err.textContent='Connection error';}
 
   if(btn){btn.disabled=false;btn.textContent='Log In';}
 

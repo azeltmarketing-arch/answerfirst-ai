@@ -559,7 +559,8 @@ body {
     <a href="#contact" class="nav-link">Contact</a>
     <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
     <a href="/seo-services.html" class="nav-link">SEO</a>
-    <a href="/portal-login.html" class="nav-cta">Client Portal</a>
+    <a href="/portal-login.html" class="nav-link" id="public-portal-link">Client Portal</a>
+    <a href="/portal-dashboard.html" class="nav-link" id="portal-dashboard-link" style="display:none;">My Dashboard</a>
   </div>
   <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
 </nav>
@@ -971,7 +972,8 @@ body {
         <li><a href="#how-it-works">How It Works</a></li>
         <li><a href="#results">Results</a></li>
         <li><a href="#contact">Contact</a></li>
-        <li><a href="/portal-login.html">Client Portal</a></li>
+        <li><a href="/portal-login.html" id="footer-public-portal">Client Portal</a></li>
+        <li><a href="/portal-dashboard.html" id="footer-dashboard-link" style="display:none;">My Dashboard</a></li>
       </ul>
     </div>
     <div>
@@ -1214,6 +1216,29 @@ body {
     el.style.animationPlayState = 'paused';
     observer.observe(el);
   });
+
+  // ===== CLIENT PORTAL LINK TOGGLE =====
+  (async () => {
+    const token = document.cookie.split('; ').find(row => row.startsWith('portal_token='))?.split('=')[1];
+    const publicLink = document.getElementById('public-portal-link');
+    const dashboardLink = document.getElementById('portal-dashboard-link');
+    const footerPublic = document.getElementById('footer-public-portal');
+    const footerDash = document.getElementById('footer-dashboard-link');
+    if (!token || !publicLink || !dashboardLink) return;
+    try {
+      const r = await fetch('https://answerfirst-ai-backend.onrender.com/portal/api/health', {
+        headers: { 'X-Portal-Token': token }
+      });
+      if (r.ok) {
+        publicLink.style.display = 'none';
+        dashboardLink.style.display = 'inline-flex';
+        if (footerPublic) footerPublic.style.display = 'none';
+        if (footerDash) footerDash.style.display = 'list-item';
+      }
+    } catch (e) {
+      // leave public links visible on error
+    }
+  })();
 
 </script>
 </body>
