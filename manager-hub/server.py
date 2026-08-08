@@ -9,6 +9,11 @@ import csv
 import time
 import random
 import requests
+import smtplib
+import threading
+import os
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from ddgs import DDGS
@@ -131,9 +136,17 @@ def init_db():
             current_step INTEGER DEFAULT 0,
             last_sent_at TEXT,
             next_send_at TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (lead_id) REFERENCES prospects(id)
         )
     """)
+    c.execute("PRAGMA table_info(outreach_sequences)")
+    seq_cols = [r[1] for r in c.fetchall()]
+    if 'created_at' not in seq_cols:
+        try:
+            c.execute("ALTER TABLE outreach_sequences ADD COLUMN created_at TEXT DEFAULT CURRENT_TIMESTAMP")
+        except Exception:
+            pass
     c.execute("""
         CREATE TABLE IF NOT EXISTS outreach_emails (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -933,7 +946,7 @@ def outreach_sequences():
         SELECT os.*, p.name as lead_name, p.email as lead_email, p.niche as lead_niche
         FROM outreach_sequences os
         LEFT JOIN prospects p ON p.id = os.lead_id
-        ORDER BY os.created_at DESC
+        ORDER BY os.id DESC
     """)
     rows = [dict(r) for r in c.fetchall()]
     conn.close()
@@ -1071,5 +1084,259 @@ def auth_me():
 
 if __name__ == '__main__':
     init_db()
+    _start_scheduler()
     print("🚀 Manager Hub running at http://127.0.0.1:5050")
     app.run(host='127.0.0.1', port=5050, debug=False)
+
+
+# ===== SMTP / Sending =====
+
+def _get_smtp_settings():
+    return {
+        'host': os.getenv('SMTP_HOST', ''),
+        'port': int(os.getenv('SMTP_PORT', '587')),
+        'user': os.getenv('SMTP_USER', ''),
+        'password': os.getenv('SMTP_PASSWORD', ''),
+        'from_name': os.getenv('SMTP_FROM_NAME', 'AnswerFirst AI'),
+        'from_email': os.getenv('SMTP_FROM_EMAIL', ''),
+    }
+
+
+def send_email_smtp(to_email: str, subject: str, body: str, niche: str = 'hvac') -> dict:
+    settings = _get_smtp_settings()
+    if not all([settings['host'], settings['user'], settings['password'], settings['from_email']]):
+        return {'status': 'skipped', 'reason': 'SMTP not configured'}
+
+    msg = MIMEMultipart()
+    msg['From'] = f"{settings['from_name']} <{settings['from_email']}>"
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP(settings['host'], settings['port'], timeout=20) as server:
+            server.starttls()
+            server.login(settings['user'], settings['password'])
+            server.send_message(msg)
+        return {'status': 'sent', 'to': to_email, 'subject': subject}
+    except Exception as e:
+        return {'status': 'error', 'error': str(e)}
+
+
+# ===== Scheduler =====
+
+_scheduler_lock = threading.Lock()
+
+
+def _start_scheduler():
+    def _run():
+        while True:
+            try:
+                _process_due_sequences()
+            except Exception as e:
+                print(f"[scheduler] Error: {e}")
+            time.sleep(60)
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    print("[scheduler] Background scheduler started")
+
+
+def _process_due_sequences():
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    now = datetime.now().isoformat()
+    c.execute("""
+        SELECT os.*, p.email as lead_email, p.name as lead_name
+        FROM outreach_sequences os
+        LEFT JOIN prospects p ON p.id = os.lead_id
+        WHERE os.status = 'active' AND os.next_send_at IS NOT NULL AND os.next_send_at <= ?
+    """, (now,))
+    due = c.fetchall()
+
+    for seq in due:
+        c.execute("SELECT * FROM outreach_emails WHERE sequence_id = ? AND step = ? AND status = 'pending'", (seq['id'], seq['current_step']))
+        email = c.fetchone()
+        if not email:
+            # No pending email at current step, mark sequence stopped
+            c.execute("UPDATE outreach_sequences SET status = 'stopped' WHERE id = ?", (seq['id'],))
+            conn.commit()
+            continue
+
+        if not seq['lead_email']:
+            c.execute("UPDATE outreach_emails SET status = 'skipped' WHERE id = ?", (email['id'],))
+            c.execute("UPDATE outreach_sequences SET current_step = current_step + 1 WHERE id = ?", (seq['id'],))
+            conn.commit()
+            continue
+
+        # Send email
+        result = send_email_smtp(seq['lead_email'], email['subject'], email['body'], seq['niche'])
+
+        next_step = seq['current_step'] + 1
+        if next_step >= 5:
+            next_send = None
+        else:
+            delays = {1: 3, 2: 4, 3: 7, 4: 16}
+            next_send = (datetime.now() + timedelta(days=delays.get(next_step, 7))).isoformat()
+
+        if result.get('status') == 'sent':
+            c.execute("UPDATE outreach_emails SET status = 'sent', sent_at = ? WHERE id = ?", (datetime.now().isoformat(), email['id']))
+            c.execute("UPDATE outreach_sequences SET current_step = ?, last_sent_at = ?, next_send_at = ? WHERE id = ?",
+                      (next_step, datetime.now().isoformat(), next_send, seq['id']))
+            print(f"[scheduler] Sent email {email['step']} for lead {seq['lead_id']} ({seq['niche']})")
+        else:
+            c.execute("UPDATE outreach_emails SET status = 'error', sent_at = ? WHERE id = ?", (datetime.now().isoformat(), email['id']))
+            c.execute("UPDATE outreach_sequences SET current_step = ?, next_send_at = ? WHERE id = ?",
+                      (next_step, next_send, seq['id']))
+            print(f"[scheduler] Failed email {email['step']} for lead {seq['lead_id']}: {result.get('error')}")
+
+        conn.commit()
+
+    conn.close()
+
+
+@app.route('/api/outreach/send-next', methods=['POST'])
+def outreach_send_next_manual():
+    data = request.json or {}
+    sequence_id = data.get('sequence_id')
+    if not sequence_id:
+        return jsonify({'error': 'sequence_id required'}), 400
+
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM outreach_sequences WHERE id = ?", (sequence_id,))
+    seq = c.fetchone()
+    if not seq:
+        conn.close()
+        return jsonify({'error': 'sequence not found'}), 404
+
+    current_step = seq['current_step']
+    c.execute("SELECT * FROM outreach_emails WHERE sequence_id = ? AND step = ? AND status = 'pending'", (sequence_id, current_step))
+    email = c.fetchone()
+    if not email:
+        conn.close()
+        return jsonify({'error': 'no pending emails'}), 400
+
+    c.execute("SELECT email FROM prospects WHERE id = ?", (seq['lead_id'],))
+    lead = c.fetchone()
+    to_email = lead['email'] if lead else None
+    if not to_email:
+        c.execute("UPDATE outreach_emails SET status = 'skipped' WHERE id = ?", (email['id'],))
+        c.execute("UPDATE outreach_sequences SET current_step = current_step + 1 WHERE id = ?", (sequence_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'error': 'no email for lead'}), 400
+
+    result = send_email_smtp(to_email, email['subject'], email['body'], seq['niche'])
+
+    next_step = current_step + 1
+    delays = {1: 3, 2: 4, 3: 7, 4: 16}
+    next_send = (datetime.now() + timedelta(days=delays.get(next_step, 7))).isoformat() if next_step < 5 else None
+
+    now = datetime.now().isoformat()
+    if result.get('status') == 'sent':
+        c.execute("UPDATE outreach_emails SET status = 'sent', sent_at = ? WHERE id = ?", (now, email['id']))
+        c.execute("UPDATE outreach_sequences SET current_step = ?, last_sent_at = ?, next_send_at = ? WHERE id = ?",
+                  (next_step, now, next_send, sequence_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'sent', 'step': email['step'], 'subject': email['subject'], 'to': to_email})
+    else:
+        c.execute("UPDATE outreach_emails SET status = 'error' WHERE id = ?", (email['id'],))
+        c.execute("UPDATE outreach_sequences SET current_step = current_step + 1, next_send_at = ? WHERE id = ?", (next_send, sequence_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'error', 'error': result.get('error')}), 500
+
+
+@app.route('/api/outreach/run-scheduler', methods=['POST'])
+def outreach_run_scheduler():
+    try:
+        with _scheduler_lock:
+            _process_due_sequences()
+        return jsonify({'status': 'processed'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/outreach/config', methods=['GET', 'POST'])
+def outreach_config():
+    if request.method == 'GET':
+        settings = _get_smtp_settings()
+        return jsonify({k: ('***' if 'password' in k else v) for k, v in settings.items()})
+    data = request.json or {}
+    updates = {}
+    if 'smtp_host' in data: os.environ['SMTP_HOST'] = data['smtp_host']; updates['smtp_host'] = data['smtp_host']
+    if 'smtp_port' in data: os.environ['SMTP_PORT'] = str(data['smtp_port']); updates['smtp_port'] = data['smtp_port']
+    if 'smtp_user' in data: os.environ['SMTP_USER'] = data['smtp_user']; updates['smtp_user'] = data['smtp_user']
+    if 'smtp_password' in data: os.environ['SMTP_PASSWORD'] = data['smtp_password']; updates['smtp_password'] = '***'
+    if 'smtp_from_email' in data: os.environ['SMTP_FROM_EMAIL'] = data['smtp_from_email']; updates['smtp_from_email'] = data['smtp_from_email']
+    if 'smtp_from_name' in data: os.environ['SMTP_FROM_NAME'] = data['smtp_from_name']; updates['smtp_from_name'] = data['smtp_from_name']
+    return jsonify({'status': 'updated', 'keys': list(updates.keys())})
+
+
+@app.route('/api/outreach/personalize', methods=['POST'])
+def outreach_personalize():
+    data = request.json or {}
+    website = data.get('website', '')
+    business_name = data.get('business_name', '')
+    niche = data.get('niche', 'hvac')
+
+    personalization = {
+        'business_name': business_name,
+        'website': website,
+        'verified_fact': '',
+        'personalization_score': 2,
+    }
+
+    if website and not website.startswith('http'):
+        website = 'https://' + website
+
+    if website:
+        try:
+            headers = {'User-Agent': USER_AGENT}
+            resp = requests.get(website, headers=headers, timeout=10, allow_redirects=True)
+            text = resp.text[:20000] if resp.text else ''
+            soup = BeautifulSoup(text, 'html.parser')
+            title = soup.title.string.strip() if soup.title else ''
+
+            if title:
+                personalization['title'] = title
+
+            booking_indicators = ['book', 'appointment', 'schedule', 'calendar', 'calendly', 'acuity', 'square']
+            has_booking = any(ind in text.lower() for ind in booking_indicators)
+            personalization['has_online_booking'] = bool(has_booking)
+
+            contact_methods = []
+            if 'tel:' in text or 'tel.' in text:
+                contact_methods.append('phone')
+            if '@' in text:
+                contact_methods.append('email')
+            if 'instagram' in text.lower() or 'facebook' in text.lower() or 'tiktok' in text.lower():
+                contact_methods.append('social')
+            personalization['contact_methods'] = contact_methods
+
+            facts = []
+            if has_booking:
+                facts.append(f"online booking available on {website}")
+            if contact_methods:
+                facts.append(f"contact methods: {', '.join(contact_methods)}")
+            if title:
+                facts.append(f"page title: {title}")
+
+            personalization['verified_fact'] = '; '.join(facts) if facts else f"business website at {website}"
+            personalization['personalization_score'] = 4 if has_booking else 3
+        except Exception as e:
+            personalization['verified_fact'] = f"business website at {website}"
+            personalization['personalization_score'] = 2
+    else:
+        personalization['verified_fact'] = f"{business_name} ({niche})"
+        personalization['personalization_score'] = 2
+
+    return jsonify(personalization)

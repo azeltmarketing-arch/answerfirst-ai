@@ -601,6 +601,38 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Outreach Dashboard -->
+            <div class="card" id="outreach-card" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div class="card-title" style="margin-bottom: 0;">📧 Outreach Sequences</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-secondary" onclick="renderOutreachSequences()" style="padding: 8px 16px; font-size: 0.85rem;">🔄 Refresh</button>
+                        <button class="btn-secondary" onclick="runOutreachScheduler()" style="padding: 8px 16px; font-size: 0.85rem;">▶ Run Scheduler</button>
+                    </div>
+                </div>
+                <div id="outreach-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;"></div>
+                <div style="overflow-x: auto;">
+                    <table id="outreach-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Lead</th>
+                                <th>Email</th>
+                                <th>Niche</th>
+                                <th>Status</th>
+                                <th>Step</th>
+                                <th>Last Sent</th>
+                                <th>Next Send</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="outreach-tbody">
+                            <tr><td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">Loading outreach sequences...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -860,11 +892,99 @@
                 if (resp.ok) {
                     alert(`Outreach sequence started! ${data.emails} emails queued. Sequence ID: ${data.sequence_id}`);
                     closeModal();
+                    renderOutreachSequences();
                 } else {
                     alert(data.error || 'Failed to start outreach');
                 }
             } catch (e) {
                 alert('Error starting outreach: ' + e.message);
+            }
+        }
+        
+        async function renderOutreachSequences() {
+            try {
+                const resp = await fetch(`${API_BASE}/outreach/sequences`);
+                const sequences = await resp.json();
+                const tbody = document.getElementById('outreach-tbody');
+                const summary = document.getElementById('outreach-summary');
+                
+                if (!Array.isArray(sequences)) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">Error loading sequences</td></tr>';
+                    return;
+                }
+                
+                const active = sequences.filter(s => s.status === 'active').length;
+                const stopped = sequences.filter(s => s.status === 'stopped').length;
+                const total = sequences.length;
+                
+                if (summary) {
+                    summary.innerHTML = `
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Total</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #f1f5f9;">${total}</div>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Active</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${active}</div>
+                        </div>
+                        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 14px;">
+                            <div style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Stopped</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">${stopped}</div>
+                        </div>
+                    `;
+                }
+                
+                tbody.innerHTML = sequences.map(s => {
+                    const statusClass = s.status === 'active' ? 'badge-green' : s.status === 'stopped' ? 'badge-yellow' : 'badge-gray';
+                    const nextSend = s.next_send_at ? new Date(s.next_send_at).toLocaleDateString() : '—';
+                    const lastSent = s.last_sent_at ? new Date(s.last_sent_at).toLocaleDateString() : '—';
+                    return `<tr>
+                        <td style="font-weight: 600; color: #94a3b8;">${s.id}</td>
+                        <td style="font-weight: 600;">${escapeHtml(s.lead_name || '—')}</td>
+                        <td>${escapeHtml(s.lead_email || '—')}</td>
+                        <td><span class="badge badge-blue">${escapeHtml(s.niche || '—')}</span></td>
+                        <td><span class="badge ${statusClass}">${s.status}</span></td>
+                        <td>${s.current_step}/5</td>
+                        <td>${lastSent}</td>
+                        <td>${nextSend}</td>
+                        <td>
+                            <button class="btn-secondary" onclick="sendNextEmail(${s.id})" style="padding: 6px 12px; font-size: 0.8rem;">Send Next</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load outreach sequences:', e);
+            }
+        }
+        
+        async function sendNextEmail(sequenceId) {
+            try {
+                const resp = await fetch(`${API_BASE}/outreach/send-next`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sequence_id: sequenceId })
+                });
+                const data = await resp.json();
+                
+                if (resp.ok) {
+                    alert(`Email sent!\nTo: ${data.to}\nSubject: ${data.subject}`);
+                    renderOutreachSequences();
+                } else {
+                    alert(data.error || data.detail || 'Failed to send email');
+                }
+            } catch (e) {
+                alert('Error sending email: ' + e.message);
+            }
+        }
+        
+        async function runOutreachScheduler() {
+            try {
+                const resp = await fetch(`${API_BASE}/outreach/run-scheduler`, { method: 'POST' });
+                const data = await resp.json();
+                alert(data.status === 'processed' ? 'Scheduler ran successfully.' : 'Error: ' + (data.error || 'unknown'));
+                renderOutreachSequences();
+            } catch (e) {
+                alert('Error running scheduler: ' + e.message);
             }
         }
         
@@ -1015,12 +1135,16 @@
         // Initial load
         refreshLeads();
         refreshOrders();
+        renderOutreachSequences();
         
         // Refresh leads every 30 seconds
         setInterval(refreshLeads, 30000);
         
         // Refresh orders every 30 seconds
         setInterval(refreshOrders, 30000);
+        
+        // Refresh outreach every 30 seconds
+        setInterval(renderOutreachSequences, 30000);
     </script>
 </body>
 </html>
