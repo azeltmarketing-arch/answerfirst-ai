@@ -424,55 +424,69 @@ def health():
 @app.route('/api/discover-leads', methods=['POST'])
 def discover_leads():
     data = request.json or {}
-    niche = data.get('niche', 'restaurant')
+    niches = data.get('niches') or [data.get('niche', 'restaurant')]
     location = data.get('location', 'Pico Rivera CA')
     num_results = data.get('num_results', 10)
     session_id = data.get('session_id') or datetime.now().isoformat()
     
     init_db()
-    businesses = search_businesses(niche, location, num_results * 3)
     
-    prospects = []
-    skipped_ai = 0
-    skipped_no_contact = 0
+    all_prospects = []
+    total_skipped_ai = 0
+    total_skipped_no_contact = 0
+    total_businesses = 0
     
-    for biz in businesses:
+    for niche in niches:
+        niche = niche.strip()
+        if not niche:
+            continue
         if getattr(app, '_discovery_stop', False):
             break
         
-        scraped = scrape_website(biz['url'], deep_scrape=True)
+        businesses = search_businesses(niche, location, num_results * 3)
+        total_businesses += len(businesses)
+        prospects = []
+        skipped_ai = 0
+        skipped_no_contact = 0
         
-        if scraped['has_ai']:
-            skipped_ai += 1
-            continue
+        for biz in businesses:
+            if getattr(app, '_discovery_stop', False):
+                break
+            
+            scraped = scrape_website(biz['url'], deep_scrape=True)
+            
+            if scraped['has_ai']:
+                skipped_ai += 1
+                continue
+            
+            has_email = bool(scraped['email'])
+            has_phone = bool(scraped['phone'])
+            
+            fit = calculate_fit_score(scraped['has_ai'], scraped['pain_score'], has_email, has_phone)
+            final_url = scraped.get('final_url', biz['url'])
+            
+            prospects.append({
+                'name': biz['title'],
+                'website': final_url,
+                'email': scraped['email'],
+                'phone': scraped['phone'],
+                'niche': niche,
+                'has_ai': scraped['has_ai'],
+                'pain_score': scraped['pain_score'],
+                'fit_score': fit,
+                'notes': scraped['content'][:200],
+                'session_id': session_id
+            })
+            time.sleep(random.uniform(0.8, 2.0))
         
-        has_email = bool(scraped['email'])
-        has_phone = bool(scraped['phone'])
-        
-        # Save all leads regardless of contact info; contact status is shown in UI
-        
-        fit = calculate_fit_score(scraped['has_ai'], scraped['pain_score'], has_email, has_phone)
-        final_url = scraped.get('final_url', biz['url'])
-        
-        prospect_data = {
-            'name': biz['title'],
-            'website': final_url,
-            'email': scraped['email'],
-            'phone': scraped['phone'],
-            'niche': niche,
-            'has_ai': scraped['has_ai'],
-            'pain_score': scraped['pain_score'],
-            'fit_score': fit,
-            'notes': scraped['content'][:200],
-            'session_id': session_id
-        }
-        prospects.append(prospect_data)
-        time.sleep(random.uniform(0.8, 2.0))
+        total_skipped_ai += skipped_ai
+        total_skipped_no_contact += skipped_no_contact
+        all_prospects.extend(prospects)
     
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     saved = 0
-    for p in prospects:
+    for p in all_prospects:
         try:
             c.execute("""
                 INSERT OR IGNORE INTO prospects (name, website, email, phone, niche, has_ai, pain_score, fit_score, notes, session_id)
@@ -490,10 +504,10 @@ def discover_leads():
     
     return jsonify({
         'added': saved,
-        'total_scraped': len(businesses),
-        'skipped_ai': skipped_ai,
-        'skipped_no_contact': skipped_no_contact,
-        'prospects': prospects
+        'total_scraped': total_businesses,
+        'skipped_ai': total_skipped_ai,
+        'skipped_no_contact': total_skipped_no_contact,
+        'prospects': all_prospects
     })
 
 

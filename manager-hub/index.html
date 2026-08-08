@@ -528,7 +528,7 @@
                 <div class="card-title">Auto Discover Leads</div>
                 <div class="control-panel">
                     <div class="form-group">
-                        <input type="text" id="niche" placeholder="Niche" value="restaurant">
+                        <input type="text" id="niche" placeholder="Niche (comma separated: HVAC, Roofing, Landscaping)" value="restaurant">
                         <input type="text" id="location" placeholder="Location" value="Pico Rivera CA">
                         <input type="number" id="num-results" placeholder="# Results" value="10" min="1" max="50" style="width: 120px;">
                     </div>
@@ -624,17 +624,18 @@
             progressBar.style.display = 'block';
             log.innerHTML = '';
             
-            const niche = document.getElementById('niche').value || 'restaurant';
+            const nicheInput = document.getElementById('niche').value || 'restaurant';
+            const niches = nicheInput.split(',').map(s => s.trim()).filter(Boolean);
             const location = document.getElementById('location').value || 'Pico Rivera CA';
             const numResults = parseInt(document.getElementById('num-results').value) || 10;
             
-            addLog(`Starting discovery: ${niche} in ${location} (${numResults} results)`, 'info');
+            addLog(`Starting discovery: ${niches.join(', ')} in ${location} (${numResults} results per niche)`, 'info');
             
             try {
                 const resp = await fetch(`${API_BASE}/discover-leads`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ niche, location, num_results: numResults }),
+                    body: JSON.stringify({ niches, location, num_results: numResults }),
                     signal: abortController.signal
                 });
                 
